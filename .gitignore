@@ -1,0 +1,131 @@
+# ============================================================
+# Python / FastAPI (backend/)
+# ============================================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+.venv/
+venv/
+ENV/
+env/
+.env
+!backend/.env.example
+
+# Alembic
+backend/alembic/versions/*.pyc
+
+# Coverage / testing
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ============================================================
+# Flutter (flutter_app/)
+# ============================================================
+flutter_app/.dart_tool/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.packages
+flutter_app/build/
+flutter_app/.pub-cache/
+flutter_app/.pub/
+flutter_app/pubspec.lock
+
+# Android
+flutter_app/android/.gradle/
+flutter_app/android/local.properties
+flutter_app/android/key.properties
+flutter_app/android/app/google-services.json
+flutter_app/android/captures/
+flutter_app/android/gradlew
+flutter_app/android/gradlew.bat
+flutter_app/android/gradle/
+
+# iOS
+flutter_app/ios/.symlinks/
+flutter_app/ios/Flutter/flutter_export_environment.sh
+flutter_app/ios/Flutter/Generated.xcconfig
+flutter_app/ios/Pods/
+flutter_app/ios/Podfile.lock
+
+# macOS / Windows / Linux desktop
+flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift
+flutter_app/windows/flutter/generated_plugin_registrant.cc
+flutter_app/windows/flutter/generated_plugin_registrant.h
+flutter_app/windows/flutter/generated_plugins.cmake
+flutter_app/linux/flutter/generated_plugin_registrant.cc
+flutter_app/linux/flutter/generated_plugin_registrant.h
+flutter_app/linux/flutter/generated_plugins.cmake
+
+# Generated files
+flutter_app/lib/**/*.g.dart
+flutter_app/lib/**/*.freezed.dart
+
+# ============================================================
+# Next.js / Node.js (web_app/)
+# ============================================================
+web_app/node_modules/
+web_app/.next/
+web_app/out/
+web_app/.env.local
+web_app/.env.development.local
+web_app/.env.test.local
+web_app/.env.production.local
+web_app/.turbo/
+web_app/coverage/
+
+# ============================================================
+# Docker / infrastructure
+# ============================================================
+docker-compose.override.yml
+*.log
+postgres-data/
+redis-data/
+minio-data/
+
+# ============================================================
+# Editors and OS
+# ============================================================
+.vscode/
+.idea/
+*.iml
+*.iws
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# ============================================================
+# Secrets (never commit these)
+# ============================================================
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
