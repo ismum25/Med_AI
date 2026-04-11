@@ -77,7 +77,8 @@ backend/
 │       └── notification_worker.py # Appointment reminders
 ├── alembic/                      # Database migrations
 ├── Dockerfile
-├── requirements.txt
+├── pyproject.toml                # Project metadata + dependencies (uv)
+├── uv.lock                       # Locked dependency versions
 └── .env.example
 ```
 
@@ -213,6 +214,8 @@ src/
 ### Prerequisites
 
 - Docker and Docker Compose
+- [uv](https://docs.astral.sh/uv/) (Python package manager — install once for local backend dev)
+- Python **3.13+** (matches `backend/pyproject.toml` and `backend/Dockerfile`)
 - Flutter SDK 3.x
 - Node.js 18+
 - An Anthropic API key
@@ -271,32 +274,43 @@ flutter run
 
 ### Backend — local without Docker
 
+Install dependencies from `pyproject.toml` / `uv.lock`, then run the API:
+
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+uv sync
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Run Celery worker separately:
+On Windows, the same commands work in PowerShell or Command Prompt.
+
+Run Celery worker separately (uses the same uv environment):
 
 ```bash
-celery -A app.workers.celery_app worker --loglevel=info -Q ocr,notifications
+cd backend
+uv run celery -A app.workers.celery_app worker --loglevel=info -Q ocr,notifications
 ```
+
+You still need **PostgreSQL**, **Redis**, **MinIO**, and a configured `backend/.env` (see `backend/.env.example`). A typical workflow is `docker compose up -d` for infrastructure only, then run the API with `uv` as above.
 
 ### Running migrations
 
+From `backend/` (with dependencies installed via `uv sync`):
+
 ```bash
+cd backend
+
 # Create a new migration
-alembic revision --autogenerate -m "description"
+uv run alembic revision --autogenerate -m "description"
 
 # Apply
-alembic upgrade head
+uv run alembic upgrade head
 
 # Rollback one step
-alembic downgrade -1
+uv run alembic downgrade -1
 ```
+
+When using Docker for the API, keep using `docker compose exec api alembic ...` as in [Getting Started](#getting-started).
 
 ---
 
