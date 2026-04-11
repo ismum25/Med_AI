@@ -1,9 +1,17 @@
-from pydantic_settings import BaseSettings
 from functools import lru_cache
 from typing import List
 
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=(".env", ".env.local"),
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore",
+    )
+
     APP_NAME: str = "HealthcareAPI"
     APP_ENV: str = "development"
     SECRET_KEY: str = "change-this-secret-key-in-production-min-32-chars"
@@ -11,7 +19,9 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
 
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/healthcare"
+    DATABASE_URL: str = (
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/healthcare"
+    )
     SYNC_DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/healthcare"
 
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -42,10 +52,6 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.ALLOWED_ORIGINS.split(",")]
 
     LOG_LEVEL: str = "INFO"
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
 
 
 @lru_cache()

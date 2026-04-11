@@ -1,8 +1,7 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+description = "Healthcare Platform API (FastAPI)"
 requires-python = ">=3.13"
 dependencies = [
     "alembic>=1.18.4",
@@ -12,7 +11,7 @@ dependencies = [
     "celery[redis]>=5.6.3",
     "cryptography>=46.0.7",
     "email-validator>=2.3.0",
-    "fastapi>=0.135.3",
+    "fastapi[standard]>=0.135.3",
     "hiredis>=3.3.1",
     "httpx>=0.28.1",
     "minio>=7.2.20",
@@ -24,8 +23,6 @@ dependencies = [
     "pydantic>=2.12.5",
     "pydantic-settings>=2.13.1",
     "pytesseract>=0.3.13",
-    "pytest>=9.0.3",
-    "pytest-asyncio>=1.3.0",
     "python-dateutil>=2.9.0.post0",
     "python-dotenv>=1.2.2",
     "python-jose[cryptography]>=3.5.0",
@@ -36,3 +33,21 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.49",
     "uvicorn[standard]>=0.44.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+    "ruff>=0.15.10",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.13"
+
+[tool.fastapi]
+entrypoint = "app.main:app"
