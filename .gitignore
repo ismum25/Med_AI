@@ -23,10 +23,14 @@ venv/
 ENV/
 env/
 .env
-!backend/.env.example
+.env.*
+!**/.env*.example
 
 # Alembic
 backend/alembic/versions/*.pyc
+
+# Ruff / other Python tool caches
+.ruff_cache/
 
 # Coverage / testing
 .coverage
@@ -53,7 +57,7 @@ flutter_app/.packages
 flutter_app/build/
 flutter_app/.pub-cache/
 flutter_app/.pub/
-flutter_app/pubspec.lock
+# pubspec.lock: commit for apps (publish_to: none) so CI and teammates resolve the same deps
 
 # Android
 flutter_app/android/.gradle/
@@ -64,6 +68,7 @@ flutter_app/android/captures/
 flutter_app/android/gradlew
 flutter_app/android/gradlew.bat
 flutter_app/android/gradle/
+flutter_app/android/**/.cxx/
 
 # iOS
 flutter_app/ios/.symlinks/
@@ -91,12 +96,10 @@ flutter_app/lib/**/*.freezed.dart
 web_app/node_modules/
 web_app/.next/
 web_app/out/
-web_app/.env.local
-web_app/.env.development.local
-web_app/.env.test.local
-web_app/.env.production.local
 web_app/.turbo/
 web_app/coverage/
+web_app/.vercel/
+web_app/*.tsbuildinfo
 
 # ============================================================
 # Docker / infrastructure
@@ -106,6 +109,12 @@ docker-compose.override.yml
 postgres-data/
 redis-data/
 minio-data/
+
+# Celery beat SQLite schedule (runtime; never commit — DB + WAL/shm siblings)
+backend/celerybeat-schedule
+backend/celerybeat-schedule-shm
+backend/celerybeat-schedule-wal
+**/celerybeat-schedule*
 
 # ============================================================
 # Editors and OS

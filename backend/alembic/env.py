@@ -12,12 +12,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from app.database.base import Base
 from app.config import settings
 
-from app.modules.auth.models import User, RefreshToken
-from app.modules.users.models import DoctorProfile, PatientProfile
-from app.modules.appointments.models import Appointment
-from app.modules.reports.models import MedicalReport, ExtractedReportData
-from app.modules.ai.models import ChatSession, ChatMessage
-from app.modules.ocr.models import AuditLog
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.SYNC_DATABASE_URL)

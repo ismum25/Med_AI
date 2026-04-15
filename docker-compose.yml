@@ -10,11 +10,21 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/healthcare
+      - SYNC_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/healthcare
+      - REDIS_URL=redis://:redis@redis:6379/0
+      - CELERY_BROKER_URL=redis://:redis@redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://:redis@redis:6379/2
+      - MINIO_ENDPOINT=minio:9000
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
       - ./backend:/app
+      - venv_data:/app/.venv
     restart: unless-stopped
 
   celery_worker:
@@ -25,11 +35,19 @@ services:
     command: celery -A app.workers.celery_app worker --loglevel=info -Q ocr,notifications,default -c 4
     env_file:
       - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/healthcare
+      - SYNC_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/healthcare
+      - REDIS_URL=redis://:redis@redis:6379/0
+      - CELERY_BROKER_URL=redis://:redis@redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://:redis@redis:6379/2
+      - MINIO_ENDPOINT=minio:9000
     depends_on:
       - redis
       - postgres
     volumes:
       - ./backend:/app
+      - venv_data:/app/.venv
     restart: unless-stopped
 
   celery_beat:
@@ -40,10 +58,14 @@ services:
     command: celery -A app.workers.celery_app beat --loglevel=info
     env_file:
       - ./backend/.env
+    environment:
+      - CELERY_BROKER_URL=redis://:redis@redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://:redis@redis:6379/2
     depends_on:
       - redis
     volumes:
       - ./backend:/app
+      - venv_data:/app/.venv
     restart: unless-stopped
 
   postgres:
@@ -54,9 +76,14 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d healthcare" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
 
   redis:
@@ -98,3 +125,4 @@ volumes:
   pgdata:
   redisdata:
   miniodata:
+  venv_data:

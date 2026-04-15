@@ -21,7 +21,6 @@ class DoctorProfile(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="doctor_profile")
-    appointments = relationship("Appointment", back_populates="doctor", foreign_keys="Appointment.doctor_id")
 
 
 class PatientProfile(Base):
@@ -37,5 +36,3 @@ class PatientProfile(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="patient_profile")
-    appointments = relationship("Appointment", back_populates="patient", foreign_keys="Appointment.patient_id")
-    reports = relationship("MedicalReport", back_populates="patient")

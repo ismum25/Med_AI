@@ -1,7 +1,5 @@
-import uuid
 import hashlib
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import HTTPException, status
@@ -94,7 +92,7 @@ async def refresh_access_token(refresh_token: str, db: AsyncSession) -> dict:
     result = await db.execute(
         select(RefreshToken).where(
             RefreshToken.token_hash == token_hash,
-            RefreshToken.revoked == False,
+            RefreshToken.revoked.is_(False),
             RefreshToken.expires_at > datetime.now(timezone.utc),
         )
     )
