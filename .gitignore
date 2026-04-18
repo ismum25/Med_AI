@@ -65,10 +65,10 @@ mobile_app/android/local.properties
 mobile_app/android/key.properties
 mobile_app/android/app/google-services.json
 mobile_app/android/captures/
-mobile_app/android/gradlew
-mobile_app/android/gradlew.bat
-mobile_app/android/gradle/
 mobile_app/android/**/.cxx/
+# Generated — recreated by `flutter pub get`
+mobile_app/**/GeneratedPluginRegistrant.java
+mobile_app/**/GeneratedPluginRegistrant.swift
 
 # iOS
 mobile_app/ios/.symlinks/
@@ -78,7 +78,6 @@ mobile_app/ios/Pods/
 mobile_app/ios/Podfile.lock
 
 # macOS / Windows / Linux desktop
-mobile_app/macos/Flutter/GeneratedPluginRegistrant.swift
 mobile_app/windows/flutter/generated_plugin_registrant.cc
 mobile_app/windows/flutter/generated_plugin_registrant.h
 mobile_app/windows/flutter/generated_plugins.cmake
