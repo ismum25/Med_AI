@@ -9,7 +9,7 @@ A full-stack healthcare management system built for MedAI. Supports two roles �
 ```
 MedAI/
 ├── backend/          # FastAPI REST API (Python)
-├── flutter_app/      # Mobile app (Flutter)
+├── mobile_app/       # Mobile app (Flutter)
 ├── web_app/          # Web dashboard (Next.js 14)
 ├── docker-compose.yml
 └── nginx.conf
@@ -122,7 +122,7 @@ The chatbot runs an agentic loop with four tools:
 
 ---
 
-### Flutter App (`flutter_app/`)
+### Flutter App (`mobile_app/`)
 
 Clean Architecture — three layers:
 
@@ -263,7 +263,7 @@ npm run dev
 ### 5. Run the Flutter app
 
 ```bash
-cd flutter_app
+cd mobile_app
 flutter pub get
 flutter run
 ```
