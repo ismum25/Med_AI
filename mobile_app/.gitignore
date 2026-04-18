@@ -38,27 +38,12 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android
-/android/.gradle/
-/android/local.properties
-/android/key.properties
-/android/app/google-services.json
-/android/captures/
-/android/**/.cxx/
-/android/app/debug
-/android/app/profile
-/android/app/release
-
 # iOS
 /ios/.symlinks/
 /ios/Flutter/flutter_export_environment.sh
 /ios/Flutter/Generated.xcconfig
 /ios/Pods/
 /ios/Podfile.lock
-
-# Generated plugin registrants
-**/GeneratedPluginRegistrant.java
-**/GeneratedPluginRegistrant.swift
 
 # Desktop
 /windows/flutter/generated_plugin_registrant.cc
