@@ -12,8 +12,8 @@ import 'presentation/reports/pages/report_list_page.dart';
 import 'presentation/reports/pages/upload_report_page.dart';
 import 'presentation/chatbot/pages/chat_page.dart';
 
-final _router = GoRouter(
-  initialLocation: AppRoutes.login,
+GoRouter _buildRouter(String initialLocation) => GoRouter(
+  initialLocation: initialLocation,
   routes: [
     GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginPage()),
     GoRoute(path: AppRoutes.register, builder: (_, __) => const RegisterPage()),
@@ -28,14 +28,15 @@ final _router = GoRouter(
 );
 
 class HealthcareApp extends StatelessWidget {
-  const HealthcareApp({super.key});
+  final String initialRoute;
+  const HealthcareApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Healthcare Platform',
       theme: AppTheme.lightTheme,
-      routerConfig: _router,
+      routerConfig: _buildRouter(initialRoute),
       debugShowCheckedModeBanner: false,
     );
   }
