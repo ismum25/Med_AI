@@ -16,8 +16,8 @@ var/
 sdist/
 develop-eggs/
 .installed.cfg
-lib/
-lib64/
+backend/lib/
+backend/lib64/
 .venv/
 venv/
 ENV/
@@ -46,49 +46,6 @@ coverage.xml
 .mypy_cache/
 .dmypy.json
 dmypy.json
-
-# ============================================================
-# Flutter (flutter_app/)
-# ============================================================
-flutter_app/.dart_tool/
-flutter_app/.flutter-plugins
-flutter_app/.flutter-plugins-dependencies
-flutter_app/.packages
-flutter_app/build/
-flutter_app/.pub-cache/
-flutter_app/.pub/
-# pubspec.lock: commit for apps (publish_to: none) so CI and teammates resolve the same deps
-
-# Android
-flutter_app/android/.gradle/
-flutter_app/android/local.properties
-flutter_app/android/key.properties
-flutter_app/android/app/google-services.json
-flutter_app/android/captures/
-flutter_app/android/gradlew
-flutter_app/android/gradlew.bat
-flutter_app/android/gradle/
-flutter_app/android/**/.cxx/
-
-# iOS
-flutter_app/ios/.symlinks/
-flutter_app/ios/Flutter/flutter_export_environment.sh
-flutter_app/ios/Flutter/Generated.xcconfig
-flutter_app/ios/Pods/
-flutter_app/ios/Podfile.lock
-
-# macOS / Windows / Linux desktop
-flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift
-flutter_app/windows/flutter/generated_plugin_registrant.cc
-flutter_app/windows/flutter/generated_plugin_registrant.h
-flutter_app/windows/flutter/generated_plugins.cmake
-flutter_app/linux/flutter/generated_plugin_registrant.cc
-flutter_app/linux/flutter/generated_plugin_registrant.h
-flutter_app/linux/flutter/generated_plugins.cmake
-
-# Generated files
-flutter_app/lib/**/*.g.dart
-flutter_app/lib/**/*.freezed.dart
 
 # ============================================================
 # Next.js / Node.js (web_app/)
