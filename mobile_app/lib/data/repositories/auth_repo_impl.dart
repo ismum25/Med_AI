@@ -10,12 +10,20 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<Map<String, String>> login(String email, String password) async {
+  Future<Map<String, String>> login(
+    String email,
+    String password, {
+    required bool rememberMe,
+  }) async {
     final tokens = await remoteDataSource.login(email, password);
     await _storage.write(key: 'access_token', value: tokens['access_token']);
     await _storage.write(key: 'refresh_token', value: tokens['refresh_token']);
     await _storage.write(key: 'user_role', value: tokens['role']);
     await _storage.write(key: 'user_id', value: tokens['user_id']);
+    await _storage.write(
+      key: 'remember_me',
+      value: rememberMe ? 'true' : 'false',
+    );
     return tokens;
   }
 

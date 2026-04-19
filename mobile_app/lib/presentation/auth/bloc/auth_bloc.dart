@@ -18,7 +18,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLogin(LoginEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final tokens = await loginUseCase(event.email, event.password);
+      final tokens = await loginUseCase(
+        event.email,
+        event.password,
+        rememberMe: event.rememberMe,
+      );
       emit(AuthAuthenticated(role: tokens['role']!, userId: tokens['user_id']!));
     } catch (e) {
       emit(AuthError(e.toString()));

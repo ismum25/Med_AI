@@ -4,6 +4,7 @@ import 'core/constants/app_routes.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/auth/pages/login_page.dart';
 import 'presentation/auth/pages/register_page.dart';
+import 'presentation/auth/pages/welcome_page.dart';
 import 'presentation/dashboard/pages/patient_dashboard.dart';
 import 'presentation/dashboard/pages/doctor_dashboard.dart';
 import 'presentation/appointments/pages/appointment_list_page.dart';
@@ -19,6 +20,7 @@ import 'presentation/profile/pages/profile_page.dart';
 GoRouter _buildRouter(String initialLocation) => GoRouter(
       initialLocation: initialLocation,
       routes: [
+        GoRoute(path: AppRoutes.welcome, builder: (_, __) => const WelcomePage()),
         GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginPage()),
         GoRoute(path: AppRoutes.register, builder: (_, __) => const RegisterPage()),
 

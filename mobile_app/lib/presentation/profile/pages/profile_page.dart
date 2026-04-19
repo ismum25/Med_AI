@@ -74,7 +74,10 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _logout(BuildContext context) async {
     const storage = FlutterSecureStorage();
     await storage.delete(key: 'access_token');
+    await storage.delete(key: 'refresh_token');
     await storage.delete(key: 'user_role');
+    await storage.delete(key: 'user_id');
+    await storage.delete(key: 'remember_me');
     if (context.mounted) context.go(AppRoutes.login);
   }
 
