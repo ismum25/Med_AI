@@ -9,4 +9,8 @@ class AppRoutes {
   static const String uploadReport = '/reports/upload';
   static const String chat = '/chat';
   static const String patients = '/doctor/patients';
+  static const String doctorAppointments = '/doctor/appointments';
+  static const String doctorChat = '/doctor/chat';
+  static const String patientProfile = '/patient/profile';
+  static const String doctorProfile = '/doctor/profile';
 }
