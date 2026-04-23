@@ -17,7 +17,11 @@ class PatientDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: () async {},
+      child: SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,6 +110,7 @@ class PatientDashboard extends StatelessWidget {
           _RecentReportsRow(onSeeReport: () => context.go(AppRoutes.reports)),
           const SizedBox(height: 32),
         ],
+      ),
       ),
     );
   }

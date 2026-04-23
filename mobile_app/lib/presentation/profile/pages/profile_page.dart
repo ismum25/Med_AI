@@ -106,6 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   displayName: _displayName,
                   roleLabel: _roleLabel,
                   onLogout: () => _logout(context),
+                  onRefresh: _fetchProfile,
                 ),
     );
   }
@@ -121,6 +122,7 @@ class _ProfileBody extends StatelessWidget {
   final String displayName;
   final String roleLabel;
   final VoidCallback onLogout;
+  final Future<void> Function() onRefresh;
 
   const _ProfileBody({
     required this.profile,
@@ -129,11 +131,16 @@ class _ProfileBody extends StatelessWidget {
     required this.displayName,
     required this.roleLabel,
     required this.onLogout,
+    required this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: onRefresh,
+      child: SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
         children: [
           // Hero banner
@@ -257,6 +264,7 @@ class _ProfileBody extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }
