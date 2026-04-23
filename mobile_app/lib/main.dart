@@ -27,7 +27,9 @@ void main() async {
   if (token != null && role != null) {
     initialRoute =
         role == 'doctor' ? AppRoutes.doctorDashboard : AppRoutes.patientDashboard;
-  } else if (welcomeSeen != 'true') {
+  } else if (welcomeSeen != 'true' && remember == null) {
+    // Only show welcome to first-time users who have never logged in.
+    // If remember_me is set (even 'false'), the user has logged in before.
     initialRoute = AppRoutes.welcome;
   } else {
     initialRoute = AppRoutes.login;

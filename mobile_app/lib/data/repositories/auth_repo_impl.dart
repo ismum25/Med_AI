@@ -24,6 +24,7 @@ class AuthRepositoryImpl implements AuthRepository {
       key: 'remember_me',
       value: rememberMe ? 'true' : 'false',
     );
+    await _storage.write(key: 'welcome_seen', value: 'true');
     return tokens;
   }
 
