@@ -44,6 +44,25 @@ async def list_my_reports(
     return await service.get_patient_reports(current_user.id, current_user.id, current_user.role, db)
 
 
+# Two-segment path lives outside the single-segment /{report_id} capture,
+# so it cannot be shadowed by the UUID route regardless of ordering.
+@router.get("/queue/pending-review", response_model=List[schemas.ReportResponse])
+async def get_pending_review_reports(
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(require_doctor),
+):
+    return await service.get_pending_review_reports(current_user.id, db)
+
+
+@router.get("/patient/{patient_id}", response_model=List[schemas.ReportResponse])
+async def get_patient_reports(
+    patient_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(require_doctor),
+):
+    return await service.get_patient_reports(patient_id, current_user.id, current_user.role, db)
+
+
 @router.get("/{report_id}", response_model=schemas.ReportResponse)
 async def get_report(
     report_id: uuid.UUID,
@@ -71,12 +90,3 @@ async def verify_report(
     current_user=Depends(require_doctor),
 ):
     return await service.verify_report(report_id, current_user.id, data, db)
-
-
-@router.get("/patient/{patient_id}", response_model=List[schemas.ReportResponse])
-async def get_patient_reports(
-    patient_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user=Depends(require_doctor),
-):
-    return await service.get_patient_reports(patient_id, current_user.id, current_user.role, db)
