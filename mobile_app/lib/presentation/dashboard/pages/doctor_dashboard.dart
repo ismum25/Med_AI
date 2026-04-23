@@ -2,153 +2,200 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/gradient_button.dart';
 import '../../../core/widgets/stat_card.dart';
+import '../../../injection_container.dart';
 
-class DoctorDashboard extends StatelessWidget {
+class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({super.key});
 
+  @override
+  State<DoctorDashboard> createState() => _DoctorDashboardState();
+}
+
+class _DoctorDashboardState extends State<DoctorDashboard> {
+  List<Map<String, dynamic>> _appointments = [];
+  List<Map<String, dynamic>> _pendingReports = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    if (mounted) setState(() { _loading = true; _error = null; });
+    try {
+      final client = sl<DioClient>();
+      final results = await Future.wait([
+        client.dio.get(ApiEndpoints.appointments),
+        client.dio.get(ApiEndpoints.reportsPendingReview),
+      ]);
+      if (mounted) {
+        setState(() {
+          _appointments = List<Map<String, dynamic>>.from(results[0].data as List);
+          _pendingReports = List<Map<String, dynamic>>.from(results[1].data as List);
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() { _error = 'Failed to load data'; _loading = false; });
+    }
+  }
+
   String _greeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
     return 'Good evening';
   }
 
-  String _formattedDate() {
+  List<Map<String, dynamic>> get _todayAppointments {
     final now = DateTime.now();
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    const days = [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday',
-      'Friday', 'Saturday', 'Sunday'
-    ];
-    return '${days[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
+    final today = DateTime(now.year, now.month, now.day);
+    return _appointments.where((a) {
+      final at = DateTime.parse(a['scheduled_at'] as String).toLocal();
+      final day = DateTime(at.year, at.month, at.day);
+      return day == today && a['status'] != 'cancelled';
+    }).toList()
+      ..sort((a, b) => DateTime.parse(a['scheduled_at'] as String)
+          .compareTo(DateTime.parse(b['scheduled_at'] as String)));
   }
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      color: AppColors.primary,
-      onRefresh: () async {},
-      child: SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 24),
-          // Greeting + date
-          Text(
-            _greeting(),
-            style: Theme.of(context).textTheme.headlineLarge,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _formattedDate(),
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: AppColors.onSurfaceVariant),
-          ),
-          const SizedBox(height: 20),
-          // Stats row
-          Row(
-            children: [
-              Expanded(
-                child: StatCard(
-                  value: 4,
-                  label: 'Today',
-                  icon: Icons.calendar_today_rounded,
-                  iconColor: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: StatCard(
-                  value: 3,
-                  label: 'Pending Reviews',
-                  icon: Icons.pending_actions_rounded,
-                  iconColor: AppColors.tertiary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          // Today's Schedule
-          Text("Today's Schedule",
-              style: Theme.of(context).textTheme.titleLarge),
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
+    if (_error != null) {
+      return Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(_error!, style: GoogleFonts.inter(color: AppColors.onSurfaceVariant)),
           const SizedBox(height: 12),
-          _TodayScheduleList(
-              onTap: () => context.go(AppRoutes.doctorAppointments)),
-          const SizedBox(height: 24),
-          // Reports awaiting review
-          Text('Reports Awaiting Review',
-              style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          _PendingReportsList(),
-          const SizedBox(height: 24),
-          // AI Assistant glass card
-          _AiAssistantCard(
-              onTap: () => context.go(AppRoutes.doctorChat)),
-          const SizedBox(height: 32),
-        ],
-      ),
-      ),
-    );
-  }
-}
-
-class _TodayScheduleList extends StatelessWidget {
-  final VoidCallback onTap;
-  const _TodayScheduleList({required this.onTap});
-
-  static final _appointments = [
-    _ApptItem('09:00', 'Sarah Johnson', 'General Checkup', 'Confirmed'),
-    _ApptItem('10:30', 'Mike Chen', 'Follow-up', 'Pending'),
-    _ApptItem('14:00', 'Emma Davis', 'Consultation', 'Confirmed'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    if (_appointments.isEmpty) {
-      return _EmptyState(
-        icon: Icons.event_available_outlined,
-        message: 'No appointments today',
+          TextButton(onPressed: _loadData, child: const Text('Retry')),
+        ]),
       );
     }
-    return Column(
-      children: List.generate(_appointments.length, (i) {
-        final item = _appointments[i];
-        return Padding(
-          padding: EdgeInsets.only(bottom: i < _appointments.length - 1 ? 8 : 0),
-          child: _ScheduleCard(item: item, onTap: onTap),
-        );
-      }),
+
+    final todayAppts = _todayAppointments;
+
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: _loadData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 24),
+            Text(_greeting(), style: Theme.of(context).textTheme.headlineLarge),
+            const SizedBox(height: 4),
+            Text(
+              DateFormat('EEEE, MMMM d').format(DateTime.now()),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: AppColors.onSurfaceVariant),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: StatCard(
+                    value: todayAppts.length,
+                    label: 'Today',
+                    icon: Icons.calendar_today_rounded,
+                    iconColor: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: StatCard(
+                    value: _pendingReports.length,
+                    label: 'Pending Reviews',
+                    icon: Icons.pending_actions_rounded,
+                    iconColor: AppColors.tertiary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Text("Today's Schedule", style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            if (todayAppts.isEmpty)
+              _EmptyState(
+                icon: Icons.event_available_outlined,
+                message: 'No appointments today',
+              )
+            else
+              Column(
+                children: List.generate(todayAppts.length, (i) {
+                  final a = todayAppts[i];
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: i < todayAppts.length - 1 ? 8 : 0),
+                    child: _ScheduleCard(
+                      appointment: a,
+                      onTap: () => context.go(AppRoutes.doctorAppointments),
+                    ),
+                  );
+                }),
+              ),
+            const SizedBox(height: 24),
+            Text('Reports Awaiting Review', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            if (_pendingReports.isEmpty)
+              _EmptyState(
+                icon: Icons.assignment_turned_in_outlined,
+                message: 'No reports awaiting review',
+              )
+            else
+              Column(
+                children: List.generate(
+                  _pendingReports.length > 5 ? 5 : _pendingReports.length,
+                  (i) {
+                    final r = _pendingReports[i];
+                    return Padding(
+                      padding: EdgeInsets.only(
+                          bottom: i < (_pendingReports.length > 5 ? 4 : _pendingReports.length - 1) ? 8 : 0),
+                      child: _PendingReportCard(report: r),
+                    );
+                  },
+                ),
+              ),
+            const SizedBox(height: 24),
+            _AiAssistantCard(onTap: () => context.go(AppRoutes.doctorChat)),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class _ApptItem {
-  final String time;
-  final String patient;
-  final String reason;
-  final String status;
-  const _ApptItem(this.time, this.patient, this.reason, this.status);
-}
-
+// ─────────────────────────────────────────────
+// Schedule Card
+// ─────────────────────────────────────────────
 class _ScheduleCard extends StatelessWidget {
-  final _ApptItem item;
+  final Map<String, dynamic> appointment;
   final VoidCallback onTap;
-  const _ScheduleCard({required this.item, required this.onTap});
+
+  const _ScheduleCard({required this.appointment, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final isConfirmed = item.status == 'Confirmed';
+    final at = DateTime.parse(appointment['scheduled_at'] as String).toLocal();
+    final status = appointment['status'] as String;
+    final reason = (appointment['reason'] as String?) ?? 'Consultation';
+    final isConfirmed = status == 'confirmed';
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -166,16 +213,14 @@ class _ScheduleCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Time chip
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                item.time,
+                DateFormat('hh:mm a').format(at),
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -184,33 +229,29 @@ class _ScheduleCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // Patient info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.patient,
+                    reason,
                     style: GoogleFonts.manrope(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.onSurface,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    item.reason,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: AppColors.onSurfaceVariant,
-                    ),
+                    '${appointment['duration_mins'] ?? 30} min',
+                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.onSurfaceVariant),
                   ),
                 ],
               ),
             ),
-            // Status chip
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: isConfirmed
                     ? AppColors.primary.withValues(alpha: 0.1)
@@ -218,13 +259,11 @@ class _ScheduleCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                item.status,
+                status[0].toUpperCase() + status.substring(1),
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: isConfirmed
-                      ? AppColors.primary
-                      : AppColors.tertiary,
+                  color: isConfirmed ? AppColors.primary : AppColors.tertiary,
                 ),
               ),
             ),
@@ -235,87 +274,91 @@ class _ScheduleCard extends StatelessWidget {
   }
 }
 
-class _PendingReportsList extends StatelessWidget {
-  static final _reports = [
-    ('Sarah Johnson', 'Blood Panel', '2h ago'),
-    ('Mike Chen', 'Chest X-Ray', '5h ago'),
-    ('Emma Davis', 'MRI Scan', 'Yesterday'),
-  ];
+// ─────────────────────────────────────────────
+// Pending Report Card
+// ─────────────────────────────────────────────
+class _PendingReportCard extends StatelessWidget {
+  final Map<String, dynamic> report;
+
+  const _PendingReportCard({required this.report});
+
+  String _timeAgo(String createdAt) {
+    final dt = DateTime.parse(createdAt).toLocal();
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays == 1) return 'Yesterday';
+    return '${diff.inDays}d ago';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: List.generate(_reports.length, (i) {
-        final (patient, type, time) = _reports[i];
-        return Padding(
-          padding: EdgeInsets.only(bottom: i < _reports.length - 1 ? 8 : 0),
-          child: Container(
-            padding: const EdgeInsets.all(14),
+    final title = (report['title'] as String?) ??
+        (report['file_name'] as String?) ??
+        'Medical Report';
+    final type = (report['report_type'] as String?) ?? 'Report';
+    final createdAt = report['created_at'] as String? ?? DateTime.now().toIso8601String();
+    final displayType = type.replaceAll('_', ' ');
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.onSurface.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.onSurface.withValues(alpha: 0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+              color: AppColors.tertiary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Row(
+            child: const Icon(Icons.assignment_outlined, color: AppColors.tertiary, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.tertiary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                Text(
+                  title,
+                  style: GoogleFonts.manrope(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.onSurface,
                   ),
-                  child: const Icon(
-                    Icons.assignment_outlined,
-                    color: AppColors.tertiary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        patient,
-                        style: GoogleFonts.manrope(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.onSurface,
-                        ),
-                      ),
-                      Text(
-                        type,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  time,
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: AppColors.outline,
-                  ),
+                  displayType[0].toUpperCase() + displayType.substring(1),
+                  style: GoogleFonts.inter(fontSize: 12, color: AppColors.onSurfaceVariant),
                 ),
               ],
             ),
           ),
-        );
-      }),
+          Text(
+            _timeAgo(createdAt),
+            style: GoogleFonts.inter(fontSize: 11, color: AppColors.outline),
+          ),
+        ],
+      ),
     );
   }
 }
 
+// ─────────────────────────────────────────────
+// AI Assistant Card
+// ─────────────────────────────────────────────
 class _AiAssistantCard extends StatelessWidget {
   final VoidCallback onTap;
   const _AiAssistantCard({required this.onTap});
@@ -345,11 +388,7 @@ class _AiAssistantCard extends StatelessWidget {
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(
-                  Icons.psychology_rounded,
-                  color: Colors.white,
-                  size: 26,
-                ),
+                child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 26),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -367,10 +406,7 @@ class _AiAssistantCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       'Ask clinical questions with patient context',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: AppColors.onSurfaceVariant,
-                      ),
+                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -378,11 +414,7 @@ class _AiAssistantCard extends StatelessWidget {
               const SizedBox(width: 12),
               SizedBox(
                 width: 100,
-                child: GradientButton(
-                  label: 'Start',
-                  height: 38,
-                  onPressed: onTap,
-                ),
+                child: GradientButton(label: 'Start', height: 38, onPressed: onTap),
               ),
             ],
           ),
@@ -392,6 +424,9 @@ class _AiAssistantCard extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────
+// Empty State
+// ─────────────────────────────────────────────
 class _EmptyState extends StatelessWidget {
   final IconData icon;
   final String message;
@@ -411,10 +446,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(width: 12),
           Text(
             message,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: AppColors.onSurfaceVariant,
-            ),
+            style: GoogleFonts.inter(fontSize: 14, color: AppColors.onSurfaceVariant),
           ),
         ],
       ),
