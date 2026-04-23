@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from fastapi import HTTPException, UploadFile
 
 from app.modules.reports.models import MedicalReport, ExtractedReportData
@@ -88,6 +88,29 @@ async def get_report_download_url(
 ) -> str:
     report = await get_report_by_id(report_id, requester_id, requester_role, db)
     return storage.get_presigned_url(report.file_url)
+
+
+async def get_pending_review_reports(doctor_id: uuid.UUID, db: AsyncSession) -> List[MedicalReport]:
+    from app.modules.appointments.models import Appointment
+    appt_result = await db.execute(
+        select(Appointment.patient_id)
+        .where(Appointment.doctor_id == doctor_id)
+        .distinct()
+    )
+    patient_ids = [row[0] for row in appt_result.all()]
+    if not patient_ids:
+        return []
+    result = await db.execute(
+        select(MedicalReport)
+        .where(
+            and_(
+                MedicalReport.patient_id.in_(patient_ids),
+                MedicalReport.ocr_status == "extracted",
+            )
+        )
+        .order_by(MedicalReport.created_at.desc())
+    )
+    return result.scalars().all()
 
 
 async def verify_report(
