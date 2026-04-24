@@ -20,7 +20,7 @@ class ApiEndpoints {
   static String doctorSlots(String doctorUserId) =>
       '/appointments/doctors/$doctorUserId/slots';
 
-  static const String reports = '/reports';
+  static const String reports = '/reports/';
   static const String reportsPendingReview = '/reports/queue/pending-review';
   static String reportById(String id) => '/reports/$id';
   static String reportDownload(String id) => '/reports/$id/download';
