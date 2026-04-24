@@ -12,6 +12,7 @@ abstract class ReportRemoteDataSource {
   });
   Future<List<Map<String, dynamic>>> getReports();
   Future<Map<String, dynamic>> getReport(String id);
+  Future<Map<String, dynamic>> updateReport(String id, {String? title});
 }
 
 class ReportRemoteDataSourceImpl implements ReportRemoteDataSource {
@@ -48,6 +49,15 @@ class ReportRemoteDataSourceImpl implements ReportRemoteDataSource {
   @override
   Future<Map<String, dynamic>> getReport(String id) async {
     final response = await client.dio.get(ApiEndpoints.reportById(id));
+    return Map<String, dynamic>.from(response.data);
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateReport(String id, {String? title}) async {
+    final response = await client.dio.patch(
+      ApiEndpoints.reportById(id),
+      data: {if (title != null) 'title': title},
+    );
     return Map<String, dynamic>.from(response.data);
   }
 }
