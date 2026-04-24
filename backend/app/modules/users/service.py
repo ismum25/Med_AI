@@ -3,6 +3,7 @@ from sqlalchemy import select
 from fastapi import HTTPException
 import uuid
 
+from app.modules.appointments.models import Appointment
 from app.modules.users.models import DoctorProfile, PatientProfile
 from app.modules.users.schemas import UpdateDoctorRequest, UpdatePatientRequest
 from app.modules.users.availability import (
@@ -44,6 +45,19 @@ async def get_patient_by_id(patient_id: uuid.UUID, db: AsyncSession) -> PatientP
 async def get_patient_by_user_id(user_id: uuid.UUID, db: AsyncSession):
     result = await db.execute(select(PatientProfile).where(PatientProfile.user_id == user_id))
     return result.scalar_one_or_none()
+
+
+async def list_patients_for_doctor(doctor_user_id: uuid.UUID, db: AsyncSession) -> list:
+    """Distinct patients who have at least one appointment with this doctor."""
+    stmt = (
+        select(PatientProfile)
+        .join(Appointment, Appointment.patient_id == PatientProfile.user_id)
+        .where(Appointment.doctor_id == doctor_user_id)
+        .distinct()
+        .order_by(PatientProfile.full_name.asc())
+    )
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
 
 
 async def update_doctor_profile(user_id: uuid.UUID, data: UpdateDoctorRequest, db: AsyncSession):
