@@ -7,6 +7,9 @@ class AppointmentEntity {
   final String status;
   final String? reason;
   final String? notes;
+  final String? doctorFullName;
+  final String? doctorSpecialization;
+  final String? doctorProfileId;
 
   const AppointmentEntity({
     required this.id,
@@ -17,5 +20,8 @@ class AppointmentEntity {
     required this.status,
     this.reason,
     this.notes,
+    this.doctorFullName,
+    this.doctorSpecialization,
+    this.doctorProfileId,
   });
 }
