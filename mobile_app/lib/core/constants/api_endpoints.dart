@@ -17,6 +17,8 @@ class ApiEndpoints {
 
   static const String appointments = '/appointments';
   static String appointmentById(String id) => '/appointments/$id';
+  static String doctorSlots(String doctorUserId) =>
+      '/appointments/doctors/$doctorUserId/slots';
 
   static const String reports = '/reports';
   static const String reportsPendingReview = '/reports/queue/pending-review';

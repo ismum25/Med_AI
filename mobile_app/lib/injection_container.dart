@@ -16,6 +16,7 @@ import 'domain/usecases/login_usecase.dart';
 import 'domain/usecases/register_usecase.dart';
 import 'domain/usecases/get_appointments_usecase.dart';
 import 'domain/usecases/book_appointment_usecase.dart';
+import 'domain/usecases/get_doctor_slots_usecase.dart';
 import 'domain/usecases/upload_report_usecase.dart';
 import 'domain/usecases/get_doctor_specializations_usecase.dart';
 import 'domain/usecases/list_doctors_usecase.dart';
@@ -64,6 +65,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => RegisterUseCase(sl()));
   sl.registerLazySingleton(() => GetAppointmentsUseCase(sl()));
   sl.registerLazySingleton(() => BookAppointmentUseCase(sl()));
+  sl.registerLazySingleton(() => GetDoctorSlotsUseCase(sl()));
   sl.registerLazySingleton(() => UploadReportUseCase(sl()));
   sl.registerLazySingleton(() => GetDoctorSpecializationsUseCase(sl()));
   sl.registerLazySingleton(() => ListDoctorsUseCase(sl()));
@@ -72,7 +74,11 @@ Future<void> init() async {
   // BLoCs (factories so each widget tree gets a fresh instance)
   sl.registerFactory(() => AuthBloc(loginUseCase: sl(), registerUseCase: sl()));
   sl.registerFactory(
-    () => AppointmentBloc(getAppointments: sl(), bookAppointment: sl()),
+    () => AppointmentBloc(
+      getAppointments: sl(),
+      bookAppointment: sl(),
+      getDoctorSlots: sl(),
+    ),
   );
   sl.registerFactory(
     () => DoctorDiscoveryCubit(

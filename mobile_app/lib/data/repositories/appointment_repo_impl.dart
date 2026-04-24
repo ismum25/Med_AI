@@ -1,4 +1,5 @@
 import '../../domain/entities/appointment.dart';
+import '../../domain/entities/appointment_slot.dart';
 import '../../domain/repositories/appointment_repository.dart';
 import '../datasources/appointment_remote_ds.dart';
 
@@ -20,6 +21,16 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
         doctorId: doctorId,
         scheduledAt: scheduledAt,
         reason: reason,
+      );
+
+  @override
+  Future<DoctorSlotsEntity> getDoctorSlots({
+    required String doctorUserId,
+    required DateTime date,
+  }) =>
+      remoteDataSource.getDoctorSlots(
+        doctorUserId: doctorUserId,
+        date: date,
       );
 
   @override

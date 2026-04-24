@@ -16,3 +16,10 @@ class BookAppointment extends AppointmentEvent {
   final String? reason;
   BookAppointment({required this.doctorId, required this.scheduledAt, this.reason});
 }
+
+class LoadDoctorSlots extends AppointmentEvent {
+  final String doctorUserId;
+  final DateTime date;
+
+  LoadDoctorSlots({required this.doctorUserId, required this.date});
+}
