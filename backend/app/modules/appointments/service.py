@@ -7,12 +7,38 @@ from fastapi import HTTPException
 from app.modules.appointments.models import Appointment
 from app.modules.appointments.schemas import CreateAppointmentRequest, UpdateAppointmentRequest
 from app.modules.auth.models import User
+from app.modules.users.models import DoctorProfile
+from app.modules.users import availability as avail
 
 
 async def create_appointment(patient_id: uuid.UUID, data: CreateAppointmentRequest, db: AsyncSession) -> Appointment:
     result = await db.execute(select(User).where(User.id == data.doctor_id, User.role == "doctor"))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Doctor not found")
+
+    prof_result = await db.execute(select(DoctorProfile).where(DoctorProfile.user_id == data.doctor_id))
+    dprof = prof_result.scalar_one_or_none()
+    if not dprof:
+        raise HTTPException(status_code=404, detail="Doctor profile not found")
+
+    raw_slots = dprof.available_slots
+    utc_start = avail.normalize_utc(data.scheduled_at)
+
+    if avail.legacy_availability_not_configured(raw_slots):
+        pass
+    elif avail.try_parse_weekly(raw_slots) is None:
+        raise HTTPException(status_code=400, detail="Doctor availability is misconfigured")
+    elif avail.explicit_empty_week(raw_slots):
+        raise HTTPException(status_code=400, detail="This doctor has no available hours")
+    elif avail.has_any_slot(raw_slots):
+        tzname = dprof.availability_timezone
+        if not tzname or not str(tzname).strip():
+            raise HTTPException(status_code=400, detail="Doctor availability is incomplete")
+        if not avail.appointment_start_fits_availability(utc_start, raw_slots, tzname):
+            raise HTTPException(
+                status_code=400,
+                detail="Requested time is outside the doctor's available hours",
+            )
 
     conflict = await db.execute(
         select(Appointment).where(
