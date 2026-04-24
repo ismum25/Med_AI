@@ -17,7 +17,8 @@ class AppHeader extends StatefulWidget {
 
 class _AppHeaderState extends State<AppHeader> {
   String _name = '';
-  String _roleLabel = '';
+  /// Doctor profile only; empty for patients.
+  String _specialization = '';
   final bool _hasNotification = false;
 
   @override
@@ -32,15 +33,11 @@ class _AppHeaderState extends State<AppHeader> {
       final response = await client.dio.get(ApiEndpoints.myProfile);
       final data = response.data as Map<String, dynamic>;
       final fullName = (data['full_name'] as String?) ?? '';
-      final specialization = data['specialization'] as String?;
+      final spec = (data['specialization'] as String?)?.trim() ?? '';
       if (mounted) {
         setState(() {
           _name = fullName;
-          _roleLabel = widget.role == 'doctor'
-              ? (specialization != null && specialization.isNotEmpty
-                  ? specialization
-                  : 'Doctor')
-              : 'Patient';
+          _specialization = widget.role == 'doctor' ? spec : '';
         });
       }
     } catch (_) {
@@ -123,22 +120,24 @@ class _AppHeaderState extends State<AppHeader> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 2),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              _roleLabel,
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primary,
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              _HeaderChip(
+                                label:
+                                    widget.role == 'doctor' ? 'Doctor' : 'Patient',
+                                emphasized: true,
                               ),
-                            ),
+                              if (widget.role == 'doctor' &&
+                                  _specialization.isNotEmpty)
+                                _HeaderChip(
+                                  label: _specialization,
+                                  emphasized: false,
+                                ),
+                            ],
                           ),
                         ],
                       ),
@@ -183,6 +182,39 @@ class _AppHeaderState extends State<AppHeader> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HeaderChip extends StatelessWidget {
+  final String label;
+  final bool emphasized;
+
+  const _HeaderChip({required this.label, required this.emphasized});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: emphasized
+            ? AppColors.primary.withValues(alpha: 0.12)
+            : AppColors.surfaceContainerHigh.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(999),
+        border: emphasized
+            ? null
+            : Border.all(
+                color: AppColors.outline.withValues(alpha: 0.35),
+              ),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: emphasized ? AppColors.primary : AppColors.onSurfaceVariant,
+        ),
       ),
     );
   }
