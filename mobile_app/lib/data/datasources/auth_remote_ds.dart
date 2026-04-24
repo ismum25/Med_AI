@@ -26,11 +26,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       ApiEndpoints.login,
       data: {'email': email, 'password': password},
     );
+    final data = response.data as Map<String, dynamic>;
     return {
-      'access_token': response.data['access_token'],
-      'refresh_token': response.data['refresh_token'],
-      'role': response.data['role'],
-      'user_id': response.data['user_id'],
+      'access_token': data['access_token'].toString(),
+      'refresh_token': data['refresh_token'].toString(),
+      'role': data['role'].toString(),
+      'user_id': data['user_id'].toString(),
     };
   }
 

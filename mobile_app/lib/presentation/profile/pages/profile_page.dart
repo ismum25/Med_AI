@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/storage/session_persistence.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../injection_container.dart';
 
@@ -72,12 +72,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _logout(BuildContext context) async {
-    const storage = FlutterSecureStorage();
-    await storage.delete(key: 'access_token');
-    await storage.delete(key: 'refresh_token');
-    await storage.delete(key: 'user_role');
-    await storage.delete(key: 'user_id');
-    await storage.delete(key: 'remember_me');
+    await SessionPersistence.clearAuthKeepWelcome();
     if (context.mounted) context.go(AppRoutes.login);
   }
 

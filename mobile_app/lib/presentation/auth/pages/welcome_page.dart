@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/storage/session_persistence.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/wave_background.dart';
 
@@ -10,8 +10,7 @@ class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
   Future<void> _onContinue(BuildContext context) async {
-    const storage = FlutterSecureStorage();
-    await storage.write(key: 'welcome_seen', value: 'true');
+    await SessionPersistence.setWelcomeSeen();
     if (context.mounted) context.go(AppRoutes.login);
   }
 

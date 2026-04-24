@@ -1,11 +1,10 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../core/storage/session_persistence.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_ds.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
-  final _storage = const FlutterSecureStorage();
 
   AuthRepositoryImpl(this.remoteDataSource);
 
@@ -16,15 +15,13 @@ class AuthRepositoryImpl implements AuthRepository {
     required bool rememberMe,
   }) async {
     final tokens = await remoteDataSource.login(email, password);
-    await _storage.write(key: 'access_token', value: tokens['access_token']);
-    await _storage.write(key: 'refresh_token', value: tokens['refresh_token']);
-    await _storage.write(key: 'user_role', value: tokens['role']);
-    await _storage.write(key: 'user_id', value: tokens['user_id']);
-    await _storage.write(
-      key: 'remember_me',
-      value: rememberMe ? 'true' : 'false',
+    await SessionPersistence.saveAfterLogin(
+      accessToken: tokens['access_token']!,
+      refreshToken: tokens['refresh_token']!,
+      role: tokens['role']!,
+      userId: tokens['user_id']!,
+      rememberMe: rememberMe,
     );
-    await _storage.write(key: 'welcome_seen', value: 'true');
     return tokens;
   }
 
@@ -53,6 +50,6 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout(String refreshToken) async {
     await remoteDataSource.logout(refreshToken);
-    await _storage.deleteAll();
+    await SessionPersistence.clearAll();
   }
 }
