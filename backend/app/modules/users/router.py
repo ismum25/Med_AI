@@ -42,7 +42,7 @@ async def get_my_profile(
         return schemas.PatientProfileResponse.model_validate(profile)
 
 
-@router.get("/my/patients", response_model=List[schemas.PatientProfileResponse])
+@router.get("/me/patients", response_model=List[schemas.PatientProfileResponse])
 async def list_my_patients(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(require_doctor),
