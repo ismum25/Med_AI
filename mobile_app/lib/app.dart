@@ -15,6 +15,8 @@ import 'presentation/chatbot/pages/chat_page.dart';
 import 'presentation/patient/patient_shell.dart';
 import 'presentation/doctor/doctor_shell.dart';
 import 'presentation/doctor/pages/doctor_patients_page.dart';
+import 'presentation/doctor/pages/doctor_report_review_detail_page.dart';
+import 'presentation/doctor/pages/doctor_review_queue_page.dart';
 import 'presentation/doctor/pages/doctor_schedule_page.dart';
 import 'presentation/profile/pages/profile_page.dart';
 
@@ -79,6 +81,19 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
             GoRoute(
               path: AppRoutes.patients,
               builder: (_, __) => const DoctorPatientsPage(),
+            ),
+            GoRoute(
+              path: AppRoutes.doctorReview,
+              builder: (_, __) => const DoctorReviewQueuePage(),
+              routes: [
+                GoRoute(
+                  path: ':reportId',
+                  builder: (context, state) {
+                    final id = state.pathParameters['reportId']!;
+                    return DoctorReportReviewDetailPage(reportId: id);
+                  },
+                ),
+              ],
             ),
             GoRoute(
               path: AppRoutes.doctorChat,
