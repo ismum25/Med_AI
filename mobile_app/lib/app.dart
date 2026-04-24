@@ -7,8 +7,10 @@ import 'presentation/auth/pages/register_page.dart';
 import 'presentation/auth/pages/welcome_page.dart';
 import 'presentation/dashboard/pages/patient_dashboard.dart';
 import 'presentation/dashboard/pages/doctor_dashboard.dart';
+import 'presentation/appointments/models/book_appointment_args.dart';
 import 'presentation/appointments/pages/appointment_list_page.dart';
 import 'presentation/appointments/pages/book_appointment_page.dart';
+import 'presentation/appointments/pages/doctor_profile_page.dart';
 import 'presentation/reports/pages/report_list_page.dart';
 import 'presentation/reports/pages/upload_report_page.dart';
 import 'presentation/chatbot/pages/chat_page.dart';
@@ -41,7 +43,16 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
               routes: [
                 GoRoute(
                   path: 'book',
-                  builder: (_, __) => const BookAppointmentPage(),
+                  builder: (_, state) => BookAppointmentPage(
+                    args: state.extra as BookAppointmentArgs?,
+                  ),
+                ),
+                GoRoute(
+                  path: 'doctor/:doctorProfileId',
+                  builder: (_, state) {
+                    final id = state.pathParameters['doctorProfileId']!;
+                    return DoctorProfilePage(profileId: id);
+                  },
                 ),
               ],
             ),
@@ -108,16 +119,23 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
       ],
     );
 
-class HealthcareApp extends StatelessWidget {
+class HealthcareApp extends StatefulWidget {
   final String initialRoute;
   const HealthcareApp({super.key, required this.initialRoute});
+
+  @override
+  State<HealthcareApp> createState() => _HealthcareAppState();
+}
+
+class _HealthcareAppState extends State<HealthcareApp> {
+  late final GoRouter _router = _buildRouter(widget.initialRoute);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Healthcare Platform',
       theme: AppTheme.lightTheme,
-      routerConfig: _buildRouter(initialRoute),
+      routerConfig: _router,
       debugShowCheckedModeBanner: false,
     );
   }

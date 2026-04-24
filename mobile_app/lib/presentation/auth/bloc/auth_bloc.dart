@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/network/api_error_message.dart';
 import '../../../domain/usecases/login_usecase.dart';
 import '../../../domain/usecases/register_usecase.dart';
 import 'auth_event.dart';
@@ -25,7 +26,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       emit(AuthAuthenticated(role: tokens['role']!, userId: tokens['user_id']!));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError(userFacingApiMessage(e)));
     }
   }
 
@@ -42,7 +43,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       emit(AuthRegistered(user));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError(userFacingApiMessage(e)));
     }
   }
 

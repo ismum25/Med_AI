@@ -20,6 +20,14 @@ async def list_doctors(
     return await service.get_all_doctors(db, specialization)
 
 
+@router.get("/doctors/specializations", response_model=List[str])
+async def list_doctor_specializations(
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return await service.list_doctor_specializations(db)
+
+
 @router.get("/doctors/{doctor_id}", response_model=schemas.DoctorProfileResponse)
 async def get_doctor(
     doctor_id: uuid.UUID,

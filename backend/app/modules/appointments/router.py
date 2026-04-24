@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
+from datetime import date
 import uuid
 
 from app.database.session import get_db
@@ -17,7 +18,8 @@ async def book_appointment(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(require_patient),
 ):
-    return await service.create_appointment(current_user.id, data, db)
+    appt = await service.create_appointment(current_user.id, data, db)
+    return await service.appointment_to_response(appt, "patient", db)
 
 
 @router.get("/", response_model=List[schemas.AppointmentResponse])
@@ -26,7 +28,22 @@ async def list_appointments(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return await service.get_appointments_for_user(current_user.id, current_user.role, db, status)
+    appts = await service.get_appointments_for_user(
+        current_user.id, current_user.role, db, status
+    )
+    return await service.appointments_to_responses(appts, current_user.role, db)
+
+
+@router.get(
+    "/doctors/{doctor_user_id}/slots", response_model=schemas.DoctorSlotsResponse
+)
+async def list_doctor_slots(
+    doctor_user_id: uuid.UUID,
+    date_value: date = Query(..., alias="date"),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(require_patient),
+):
+    return await service.get_doctor_slots_for_date(doctor_user_id, date_value, db)
 
 
 @router.get("/{appointment_id}", response_model=schemas.AppointmentResponse)
@@ -35,7 +52,10 @@ async def get_appointment(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return await service.get_appointment_by_id(appointment_id, current_user.id, current_user.role, db)
+    appt = await service.get_appointment_by_id(
+        appointment_id, current_user.id, current_user.role, db
+    )
+    return await service.appointment_to_response(appt, current_user.role, db)
 
 
 @router.patch("/{appointment_id}", response_model=schemas.AppointmentResponse)
@@ -45,7 +65,10 @@ async def update_appointment(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return await service.update_appointment(appointment_id, current_user.id, current_user.role, data, db)
+    appt = await service.update_appointment(
+        appointment_id, current_user.id, current_user.role, data, db
+    )
+    return await service.appointment_to_response(appt, current_user.role, db)
 
 
 @router.delete("/{appointment_id}", response_model=schemas.AppointmentResponse)
@@ -55,4 +78,7 @@ async def cancel_appointment(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return await service.cancel_appointment(appointment_id, current_user.id, current_user.role, reason, db)
+    appt = await service.cancel_appointment(
+        appointment_id, current_user.id, current_user.role, reason, db
+    )
+    return await service.appointment_to_response(appt, current_user.role, db)

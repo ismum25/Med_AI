@@ -21,6 +21,12 @@ async def get_all_doctors(db: AsyncSession, specialization: str = None) -> list:
     return result.scalars().all()
 
 
+async def list_doctor_specializations(db: AsyncSession) -> list[str]:
+    result = await db.execute(select(DoctorProfile.specialization).distinct())
+    rows = {r[0].strip() for r in result.all() if r[0] and r[0].strip()}
+    return sorted(rows, key=str.lower)
+
+
 async def get_doctor_by_id(doctor_id: uuid.UUID, db: AsyncSession) -> DoctorProfile:
     result = await db.execute(select(DoctorProfile).where(DoctorProfile.id == doctor_id))
     doctor = result.scalar_one_or_none()

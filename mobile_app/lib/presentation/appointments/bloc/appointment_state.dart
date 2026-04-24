@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/appointment.dart';
+import '../../../domain/entities/appointment_slot.dart';
 
 abstract class AppointmentState extends Equatable {
   @override
@@ -26,4 +27,14 @@ class AppointmentError extends AppointmentState {
   AppointmentError(this.message);
   @override
   List<Object?> get props => [message];
+}
+
+class DoctorSlotsLoading extends AppointmentState {}
+
+class DoctorSlotsLoaded extends AppointmentState {
+  final DoctorSlotsEntity payload;
+  DoctorSlotsLoaded(this.payload);
+
+  @override
+  List<Object?> get props => [payload];
 }

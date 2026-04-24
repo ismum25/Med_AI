@@ -1,6 +1,7 @@
 import '../../core/constants/api_endpoints.dart';
 import '../../core/network/dio_client.dart';
 import '../models/appointment_model.dart';
+import '../models/appointment_slot_model.dart';
 
 abstract class AppointmentRemoteDataSource {
   Future<List<AppointmentModel>> getAppointments({String? status});
@@ -8,6 +9,10 @@ abstract class AppointmentRemoteDataSource {
     required String doctorId,
     required DateTime scheduledAt,
     String? reason,
+  });
+  Future<DoctorSlotsModel> getDoctorSlots({
+    required String doctorUserId,
+    required DateTime date,
   });
   Future<AppointmentModel> cancelAppointment(String id, {String? reason});
 }
@@ -49,5 +54,17 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
       queryParameters: reason != null ? {'reason': reason} : null,
     );
     return AppointmentModel.fromJson(response.data);
+  }
+
+  @override
+  Future<DoctorSlotsModel> getDoctorSlots({
+    required String doctorUserId,
+    required DateTime date,
+  }) async {
+    final response = await client.dio.get(
+      ApiEndpoints.doctorSlots(doctorUserId),
+      queryParameters: {'date': date.toIso8601String().split('T').first},
+    );
+    return DoctorSlotsModel.fromJson(response.data as Map<String, dynamic>);
   }
 }
