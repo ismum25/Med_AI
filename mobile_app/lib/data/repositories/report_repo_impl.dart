@@ -26,4 +26,8 @@ class ReportRepositoryImpl implements ReportRepository {
 
   @override
   Future<Map<String, dynamic>> getReport(String id) => remoteDataSource.getReport(id);
+
+  @override
+  Future<Map<String, dynamic>> updateReport(String id, {String? title}) =>
+      remoteDataSource.updateReport(id, title: title);
 }

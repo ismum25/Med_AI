@@ -30,7 +30,7 @@ class MedicalReport(Base):
     patient = relationship("User", foreign_keys=[patient_id], backref="medical_reports")
     uploaded_by_user = relationship("User", foreign_keys=[uploaded_by])
     verifier = relationship("User", foreign_keys=[verified_by])
-    extracted_data = relationship("ExtractedReportData", back_populates="report", uselist=False)
+    extracted = relationship("ExtractedReportData", back_populates="report", uselist=False)
 
 
 class ExtractedReportData(Base):
@@ -43,4 +43,4 @@ class ExtractedReportData(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    report = relationship("MedicalReport", back_populates="extracted_data")
+    report = relationship("MedicalReport", back_populates="extracted")

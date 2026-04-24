@@ -99,7 +99,15 @@ class _ReportListPageState extends State<ReportListPage> {
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
         itemCount: _reports.length,
         separatorBuilder: (_, __) => const SizedBox(height: 10),
-        itemBuilder: (context, i) => _ReportCard(report: _reports[i]),
+        itemBuilder: (context, i) => _ReportCard(
+          report: _reports[i],
+          onTap: () async {
+            final id = _reports[i]['id']?.toString();
+            if (id == null) return;
+            await context.push(AppRoutes.patientReportDetail(id));
+            if (mounted) _loadReports();
+          },
+        ),
       ),
     );
   }
@@ -110,7 +118,8 @@ class _ReportListPageState extends State<ReportListPage> {
 // ─────────────────────────────────────────────
 class _ReportCard extends StatelessWidget {
   final Map<String, dynamic> report;
-  const _ReportCard({required this.report});
+  final VoidCallback? onTap;
+  const _ReportCard({required this.report, this.onTap});
 
   static const _typeIcons = <String, IconData>{
     'blood_test': Icons.water_drop_outlined,
@@ -158,7 +167,10 @@ class _ReportCard extends StatelessWidget {
       dateStr = DateFormat('MMM d, yyyy').format(dt);
     }
 
-    return Container(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
@@ -231,6 +243,7 @@ class _ReportCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }

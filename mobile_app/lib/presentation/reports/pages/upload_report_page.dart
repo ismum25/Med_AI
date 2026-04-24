@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/widgets/underline_text_field.dart';
 import '../../../injection_container.dart';
 import '../bloc/report_bloc.dart';
 import '../bloc/report_event.dart';
@@ -16,6 +17,13 @@ class _UploadReportPageState extends State<UploadReportPage> {
   XFile? _selectedFile;
   String _reportType = 'blood_test';
   final _picker = ImagePicker();
+  final _titleCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final file = await _picker.pickImage(source: source, imageQuality: 85);
@@ -96,6 +104,14 @@ class _UploadReportPageState extends State<UploadReportPage> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
+                  UnderlineTextField(
+                    controller: _titleCtrl,
+                    label: 'Title (optional)',
+                    icon: Icons.title_rounded,
+                    enabled: state is! ReportLoading,
+                    textCapitalization: TextCapitalization.sentences,
+                  ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _reportType,
@@ -118,12 +134,14 @@ class _UploadReportPageState extends State<UploadReportPage> {
                           ? null
                           : () async {
                               final bytes = await _selectedFile!.readAsBytes();
+                              final trimmedTitle = _titleCtrl.text.trim();
                               if (context.mounted) {
                                 context.read<ReportBloc>().add(UploadReportEvent(
                                   fileBytes: bytes,
                                   fileName: _selectedFile!.name,
                                   mimeType: 'image/jpeg',
                                   reportType: _reportType,
+                                  title: trimmedTitle.isEmpty ? null : trimmedTitle,
                                 ));
                               }
                             },

@@ -10,6 +10,7 @@ class AppRoutes {
       '/appointments/doctor/$doctorProfileId';
   static const String reports = '/reports';
   static const String uploadReport = '/reports/upload';
+  static String patientReportDetail(String reportId) => '/reports/$reportId';
   static const String chat = '/chat';
   static const String patients = '/doctor/patients';
   static const String doctorAppointments = '/doctor/appointments';

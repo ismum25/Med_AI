@@ -12,10 +12,12 @@ class UploadReportEvent extends ReportEvent {
   final String fileName;
   final String mimeType;
   final String? reportType;
+  final String? title;
   UploadReportEvent({
     required this.fileBytes,
     required this.fileName,
     required this.mimeType,
     this.reportType,
+    this.title,
   });
 }

@@ -83,6 +83,19 @@ async def download_report(
     return {"download_url": url}
 
 
+@router.patch("/{report_id}", response_model=schemas.ReportResponse)
+async def update_report(
+    report_id: uuid.UUID,
+    data: schemas.UpdateReportRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(require_patient),
+):
+    report = await service.update_report(
+        report_id, current_user.id, current_user.role, data, db
+    )
+    return await service.report_to_response(report, db, current_user.role)
+
+
 @router.patch("/{report_id}/verify", response_model=schemas.ReportResponse)
 async def verify_report(
     report_id: uuid.UUID,
