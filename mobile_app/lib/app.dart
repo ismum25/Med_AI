@@ -11,6 +11,7 @@ import 'presentation/appointments/models/book_appointment_args.dart';
 import 'presentation/appointments/pages/appointment_list_page.dart';
 import 'presentation/appointments/pages/book_appointment_page.dart';
 import 'presentation/appointments/pages/doctor_profile_page.dart';
+import 'presentation/reports/pages/report_detail_page.dart';
 import 'presentation/reports/pages/report_list_page.dart';
 import 'presentation/reports/pages/upload_report_page.dart';
 import 'presentation/chatbot/pages/chat_page.dart';
@@ -63,6 +64,13 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
                 GoRoute(
                   path: 'upload',
                   builder: (_, __) => const UploadReportPage(),
+                ),
+                GoRoute(
+                  path: ':reportId',
+                  builder: (_, state) {
+                    final id = state.pathParameters['reportId']!;
+                    return ReportDetailPage(reportId: id);
+                  },
                 ),
               ],
             ),

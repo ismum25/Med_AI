@@ -18,6 +18,7 @@ import 'domain/usecases/get_appointments_usecase.dart';
 import 'domain/usecases/book_appointment_usecase.dart';
 import 'domain/usecases/get_doctor_slots_usecase.dart';
 import 'domain/usecases/upload_report_usecase.dart';
+import 'domain/usecases/update_report_usecase.dart';
 import 'domain/usecases/get_doctor_specializations_usecase.dart';
 import 'domain/usecases/list_doctors_usecase.dart';
 import 'domain/usecases/get_doctor_profile_usecase.dart';
@@ -71,6 +72,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => BookAppointmentUseCase(sl()));
   sl.registerLazySingleton(() => GetDoctorSlotsUseCase(sl()));
   sl.registerLazySingleton(() => UploadReportUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateReportUseCase(sl()));
   sl.registerLazySingleton(() => GetDoctorSpecializationsUseCase(sl()));
   sl.registerLazySingleton(() => ListDoctorsUseCase(sl()));
   sl.registerLazySingleton(() => GetDoctorProfileUseCase(sl()));
