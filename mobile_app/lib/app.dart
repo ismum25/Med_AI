@@ -15,6 +15,7 @@ import 'presentation/chatbot/pages/chat_page.dart';
 import 'presentation/patient/patient_shell.dart';
 import 'presentation/doctor/doctor_shell.dart';
 import 'presentation/doctor/pages/doctor_patients_page.dart';
+import 'presentation/doctor/pages/doctor_schedule_page.dart';
 import 'presentation/profile/pages/profile_page.dart';
 
 GoRouter _buildRouter(String initialLocation) => GoRouter(
@@ -73,7 +74,7 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
             ),
             GoRoute(
               path: AppRoutes.doctorAppointments,
-              builder: (_, __) => const AppointmentListPage(),
+              builder: (_, __) => const DoctorSchedulePage(),
             ),
             GoRoute(
               path: AppRoutes.patients,
