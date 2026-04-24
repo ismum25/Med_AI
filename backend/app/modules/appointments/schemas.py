@@ -32,6 +32,9 @@ class AppointmentResponse(BaseModel):
     cancellation_reason: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+    doctor_full_name: Optional[str] = None
+    doctor_specialization: Optional[str] = None
+    doctor_profile_id: Optional[uuid.UUID] = None
 
     class Config:
         from_attributes = True

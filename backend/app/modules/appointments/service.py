@@ -5,7 +5,7 @@ from sqlalchemy import select, and_
 from fastapi import HTTPException
 
 from app.modules.appointments.models import Appointment
-from app.modules.appointments.schemas import CreateAppointmentRequest, UpdateAppointmentRequest
+from app.modules.appointments.schemas import AppointmentResponse, CreateAppointmentRequest, UpdateAppointmentRequest
 from app.modules.auth.models import User
 from app.modules.users.models import DoctorProfile
 from app.modules.users import availability as avail
@@ -78,6 +78,43 @@ async def get_appointments_for_user(
     query = query.order_by(Appointment.scheduled_at.desc())
     result = await db.execute(query)
     return result.scalars().all()
+
+
+def _appointment_to_response(
+    appt: Appointment, role: str, doctor_by_user_id: dict[uuid.UUID, DoctorProfile]
+) -> AppointmentResponse:
+    r = AppointmentResponse.model_validate(appt, from_attributes=True)
+    if role == "patient":
+        prof = doctor_by_user_id.get(appt.doctor_id)
+        if prof:
+            return r.model_copy(
+                update={
+                    "doctor_full_name": prof.full_name,
+                    "doctor_specialization": prof.specialization,
+                    "doctor_profile_id": prof.id,
+                }
+            )
+    return r
+
+
+async def appointments_to_responses(
+    items: List[Appointment], role: str, db: AsyncSession
+) -> List[AppointmentResponse]:
+    doctor_by_user_id: dict[uuid.UUID, DoctorProfile] = {}
+    if role == "patient" and items:
+        doc_user_ids = {a.doctor_id for a in items}
+        res = await db.execute(
+            select(DoctorProfile).where(DoctorProfile.user_id.in_(doc_user_ids))
+        )
+        for prof in res.scalars().all():
+            doctor_by_user_id[prof.user_id] = prof
+    return [_appointment_to_response(a, role, doctor_by_user_id) for a in items]
+
+
+async def appointment_to_response(
+    appt: Appointment, role: str, db: AsyncSession
+) -> AppointmentResponse:
+    return (await appointments_to_responses([appt], role, db))[0]
 
 
 async def get_appointment_by_id(
