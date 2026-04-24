@@ -49,11 +49,15 @@ async def get_patient_by_user_id(user_id: uuid.UUID, db: AsyncSession):
 
 async def list_patients_for_doctor(doctor_user_id: uuid.UUID, db: AsyncSession) -> list:
     """Distinct patients who have at least one appointment with this doctor."""
-    stmt = (
-        select(PatientProfile)
-        .join(Appointment, Appointment.patient_id == PatientProfile.user_id)
+    # Subquery avoids PostgreSQL "SELECT DISTINCT ... ORDER BY" errors from JOIN+DISTINCT.
+    patient_user_ids = (
+        select(Appointment.patient_id)
         .where(Appointment.doctor_id == doctor_user_id)
         .distinct()
+    )
+    stmt = (
+        select(PatientProfile)
+        .where(PatientProfile.user_id.in_(patient_user_ids))
         .order_by(PatientProfile.full_name.asc())
     )
     result = await db.execute(stmt)
