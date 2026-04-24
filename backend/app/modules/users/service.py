@@ -5,6 +5,11 @@ import uuid
 
 from app.modules.users.models import DoctorProfile, PatientProfile
 from app.modules.users.schemas import UpdateDoctorRequest, UpdatePatientRequest
+from app.modules.users.availability import (
+    WeeklyAvailability,
+    weekly_availability_to_storage_dict,
+    validate_timezone_required_for_slots,
+)
 
 
 async def get_all_doctors(db: AsyncSession, specialization: str = None) -> list:
@@ -45,8 +50,28 @@ async def update_doctor_profile(user_id: uuid.UUID, data: UpdateDoctorRequest, d
     doctor = await get_doctor_by_user_id(user_id, db)
     if not doctor:
         raise HTTPException(status_code=404, detail="Doctor profile not found")
-    for field, value in data.model_dump(exclude_unset=True).items():
-        setattr(doctor, field, value)
+
+    payload = data.model_dump(exclude_unset=True)
+
+    merged_slots = doctor.available_slots if doctor.available_slots is not None else {}
+    merged_tz = getattr(doctor, "availability_timezone", None)
+
+    if "available_slots" in payload and payload["available_slots"] is not None:
+        wa = WeeklyAvailability.model_validate(payload["available_slots"])
+        merged_slots = weekly_availability_to_storage_dict(wa)
+    if "availability_timezone" in payload:
+        merged_tz = payload["availability_timezone"]
+
+    validate_timezone_required_for_slots(merged_slots, merged_tz)
+
+    for field, value in payload.items():
+        if field == "available_slots":
+            setattr(doctor, "available_slots", merged_slots)
+        elif field == "availability_timezone":
+            setattr(doctor, "availability_timezone", merged_tz)
+        else:
+            setattr(doctor, field, value)
+
     await db.commit()
     await db.refresh(doctor)
     return doctor
