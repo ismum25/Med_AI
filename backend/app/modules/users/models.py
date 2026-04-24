@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey, JSON, Numeric, func
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, JSON, Numeric, Integer, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database.base import Base
@@ -20,6 +20,7 @@ class DoctorProfile(Base):
     # IANA zone used with available_slots for booking validation (e.g. Asia/Dhaka)
     availability_timezone = Column(String(64), nullable=True)
     rating = Column(Numeric(3, 2), default=0.0)
+    years_experience = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="doctor_profile")

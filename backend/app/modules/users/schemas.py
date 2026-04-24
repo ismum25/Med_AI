@@ -17,6 +17,7 @@ class DoctorProfileResponse(BaseModel):
     available_slots: Optional[Dict[str, Any]] = None
     availability_timezone: Optional[str] = None
     rating: float = 0.0
+    years_experience: Optional[int] = None
 
     class Config:
         from_attributes = True
@@ -43,6 +44,7 @@ class UpdateDoctorRequest(BaseModel):
     consultation_fee: Optional[float] = None
     available_slots: Optional[WeeklyAvailability] = None
     availability_timezone: Optional[str] = None
+    years_experience: Optional[int] = None
 
 
 class UpdatePatientRequest(BaseModel):
@@ -61,6 +63,7 @@ class DoctorListItem(BaseModel):
     hospital: Optional[str] = None
     consultation_fee: Optional[float] = None
     rating: float = 0.0
+    years_experience: Optional[int] = None
 
     class Config:
         from_attributes = True
