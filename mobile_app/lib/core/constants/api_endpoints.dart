@@ -10,11 +10,14 @@ class ApiEndpoints {
 
   static const String doctors = '/users/doctors';
   static const String myProfile = '/users/me/profile';
+  static const String myPatients = '/users/me/patients';
+  static const String doctorProfileUpdate = '/users/me/doctor-profile';
 
   static const String appointments = '/appointments';
   static String appointmentById(String id) => '/appointments/$id';
 
   static const String reports = '/reports';
+  static const String reportsPendingReview = '/reports/queue/pending-review';
   static String reportById(String id) => '/reports/$id';
   static String reportDownload(String id) => '/reports/$id/download';
   static String verifyReport(String id) => '/reports/$id/verify';

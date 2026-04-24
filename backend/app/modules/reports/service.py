@@ -2,11 +2,11 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from fastapi import HTTPException, UploadFile
 
 from app.modules.reports.models import MedicalReport, ExtractedReportData
-from app.modules.reports.schemas import VerifyReportRequest
+from app.modules.reports.schemas import VerifyReportRequest, ReportResponse
 from app.modules.reports import storage
 
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/tiff"}
@@ -83,11 +83,47 @@ async def get_report_by_id(
     return report
 
 
+async def report_to_response(
+    report: MedicalReport, db: AsyncSession, requester_role: str
+) -> ReportResponse:
+    extracted: Optional[dict] = None
+    if requester_role == "doctor":
+        er = await db.execute(select(ExtractedReportData).where(ExtractedReportData.report_id == report.id))
+        row = er.scalar_one_or_none()
+        if row:
+            extracted = row.data
+    base = ReportResponse.model_validate(report)
+    return base.model_copy(update={"extracted_data": extracted})
+
+
 async def get_report_download_url(
     report_id: uuid.UUID, requester_id: uuid.UUID, requester_role: str, db: AsyncSession
 ) -> str:
     report = await get_report_by_id(report_id, requester_id, requester_role, db)
     return storage.get_presigned_url(report.file_url)
+
+
+async def get_pending_review_reports(doctor_id: uuid.UUID, db: AsyncSession) -> List[MedicalReport]:
+    from app.modules.appointments.models import Appointment
+    appt_result = await db.execute(
+        select(Appointment.patient_id)
+        .where(Appointment.doctor_id == doctor_id)
+        .distinct()
+    )
+    patient_ids = [row[0] for row in appt_result.all()]
+    if not patient_ids:
+        return []
+    result = await db.execute(
+        select(MedicalReport)
+        .where(
+            and_(
+                MedicalReport.patient_id.in_(patient_ids),
+                MedicalReport.ocr_status == "extracted",
+            )
+        )
+        .order_by(MedicalReport.created_at.desc())
+    )
+    return result.scalars().all()
 
 
 async def verify_report(

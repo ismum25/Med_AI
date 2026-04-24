@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Any, Dict
 from datetime import datetime
 import uuid
@@ -19,6 +19,10 @@ class ReportResponse(BaseModel):
     verified_at: Optional[datetime] = None
     notes: Optional[str] = None
     created_at: datetime
+    extracted_data: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="OCR structured payload; set on GET /reports/{id} for doctors when present.",
+    )
 
     class Config:
         from_attributes = True

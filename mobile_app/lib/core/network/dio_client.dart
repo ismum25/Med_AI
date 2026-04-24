@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/api_endpoints.dart';
+import '../storage/session_persistence.dart';
 
 class DioClient {
   late final Dio dio;
@@ -55,7 +56,11 @@ class DioClient {
         '${ApiEndpoints.baseUrl}${ApiEndpoints.refresh}',
         data: {'refresh_token': refreshToken},
       );
-      await _storage.write(key: 'access_token', value: response.data['access_token']);
+      final data = response.data as Map<String, dynamic>;
+      await SessionPersistence.saveTokensAfterRefresh(
+        accessToken: data['access_token'] as String,
+        refreshToken: data['refresh_token'] as String,
+      );
       return true;
     } catch (_) {
       return false;

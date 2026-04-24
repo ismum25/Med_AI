@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional, Any, Dict, List
 import uuid
 
+from app.modules.users.availability import WeeklyAvailability
+
 
 class DoctorProfileResponse(BaseModel):
     id: uuid.UUID
@@ -13,6 +15,7 @@ class DoctorProfileResponse(BaseModel):
     bio: Optional[str] = None
     consultation_fee: Optional[float] = None
     available_slots: Optional[Dict[str, Any]] = None
+    availability_timezone: Optional[str] = None
     rating: float = 0.0
 
     class Config:
@@ -38,7 +41,8 @@ class UpdateDoctorRequest(BaseModel):
     hospital: Optional[str] = None
     bio: Optional[str] = None
     consultation_fee: Optional[float] = None
-    available_slots: Optional[Dict[str, Any]] = None
+    available_slots: Optional[WeeklyAvailability] = None
+    availability_timezone: Optional[str] = None
 
 
 class UpdatePatientRequest(BaseModel):

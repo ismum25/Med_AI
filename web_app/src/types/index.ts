@@ -10,11 +10,13 @@ export interface User {
   created_at: string;
 }
 
+/** Week keys: mon..sun — values are "HH:mm-HH:mm" half-open intervals per day */
 export interface DoctorProfile {
   user_id: string;
   specialization: string;
   license_number: string;
   available_slots: Record<string, string[]>;
+  availability_timezone?: string | null;
   rating: number;
   user: User;
 }

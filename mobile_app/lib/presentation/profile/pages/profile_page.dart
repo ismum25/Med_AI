@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/storage/session_persistence.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../injection_container.dart';
 
@@ -72,12 +72,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _logout(BuildContext context) async {
-    const storage = FlutterSecureStorage();
-    await storage.delete(key: 'access_token');
-    await storage.delete(key: 'refresh_token');
-    await storage.delete(key: 'user_role');
-    await storage.delete(key: 'user_id');
-    await storage.delete(key: 'remember_me');
+    await SessionPersistence.clearAuthKeepWelcome();
     if (context.mounted) context.go(AppRoutes.login);
   }
 
@@ -106,6 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   displayName: _displayName,
                   roleLabel: _roleLabel,
                   onLogout: () => _logout(context),
+                  onRefresh: _fetchProfile,
                 ),
     );
   }
@@ -121,6 +117,7 @@ class _ProfileBody extends StatelessWidget {
   final String displayName;
   final String roleLabel;
   final VoidCallback onLogout;
+  final Future<void> Function() onRefresh;
 
   const _ProfileBody({
     required this.profile,
@@ -129,11 +126,16 @@ class _ProfileBody extends StatelessWidget {
     required this.displayName,
     required this.roleLabel,
     required this.onLogout,
+    required this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: onRefresh,
+      child: SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
         children: [
           // Hero banner
@@ -257,6 +259,7 @@ class _ProfileBody extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

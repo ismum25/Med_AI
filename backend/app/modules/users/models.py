@@ -17,6 +17,8 @@ class DoctorProfile(Base):
     bio = Column(Text)
     consultation_fee = Column(Numeric(10, 2))
     available_slots = Column(JSON, default=dict)
+    # IANA zone used with available_slots for booking validation (e.g. Asia/Dhaka)
+    availability_timezone = Column(String(64), nullable=True)
     rating = Column(Numeric(3, 2), default=0.0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

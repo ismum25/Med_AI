@@ -35,7 +35,7 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
       ApiEndpoints.appointments,
       data: {
         'doctor_id': doctorId,
-        'scheduled_at': scheduledAt.toIso8601String(),
+        'scheduled_at': scheduledAt.toUtc().toIso8601String(),
         if (reason != null) 'reason': reason,
       },
     );
