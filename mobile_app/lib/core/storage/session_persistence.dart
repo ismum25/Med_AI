@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -129,6 +131,26 @@ final class SessionPersistence {
     ]);
   }
 
+  static String? _extractRoleFromJwt(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length < 2) return null;
+      final payload = parts[1];
+      final normalized = base64Url.normalize(payload);
+      final decoded = utf8.decode(base64Url.decode(normalized));
+      final map = jsonDecode(decoded);
+      if (map is Map<String, dynamic>) {
+        final role = map['role'];
+        if (role is String && role.trim().isNotEmpty) {
+          return role.trim();
+        }
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Call from [main] before [runApp]. Applies remember-me policy, then ensures
   /// secure storage has tokens if prefs still has them.
   static Future<
@@ -159,6 +181,16 @@ final class SessionPersistence {
         prefs.getString(SessionKeys.accessToken);
     role = await _secure.read(key: SessionKeys.userRole) ??
         prefs.getString(SessionKeys.userRole);
+    if (token != null && (role == null || role.trim().isEmpty)) {
+      final extractedRole = _extractRoleFromJwt(token);
+      if (extractedRole != null) {
+        role = extractedRole;
+        await Future.wait([
+          _secure.write(key: SessionKeys.userRole, value: extractedRole),
+          prefs.setString(SessionKeys.userRole, extractedRole),
+        ]);
+      }
+    }
 
     var welcomeSeen = prefs.getString(SessionKeys.welcomeSeen) ??
         await _secure.read(key: SessionKeys.welcomeSeen);
