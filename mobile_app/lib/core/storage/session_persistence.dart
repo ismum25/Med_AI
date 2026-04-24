@@ -20,6 +20,14 @@ final class SessionPersistence {
 
   static const _secure = FlutterSecureStorage();
 
+  /// Best-effort secure-storage write. Swallows exceptions so a broken Android
+  /// keystore can never block durable persistence via [SharedPreferences].
+  static Future<void> _trySecureWrite(String key, String value) async {
+    try {
+      await _secure.write(key: key, value: value);
+    } catch (_) {}
+  }
+
   static Future<void> saveAfterLogin({
     required String accessToken,
     required String refreshToken,
@@ -29,20 +37,20 @@ final class SessionPersistence {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final remember = rememberMe ? 'true' : 'false';
-    await Future.wait([
-      _secure.write(key: SessionKeys.accessToken, value: accessToken),
-      _secure.write(key: SessionKeys.refreshToken, value: refreshToken),
-      _secure.write(key: SessionKeys.userRole, value: role),
-      _secure.write(key: SessionKeys.userId, value: userId),
-      _secure.write(key: SessionKeys.rememberMe, value: remember),
-      _secure.write(key: SessionKeys.welcomeSeen, value: 'true'),
-      prefs.setString(SessionKeys.accessToken, accessToken),
-      prefs.setString(SessionKeys.refreshToken, refreshToken),
-      prefs.setString(SessionKeys.userRole, role),
-      prefs.setString(SessionKeys.userId, userId),
-      prefs.setString(SessionKeys.rememberMe, remember),
-      prefs.setString(SessionKeys.welcomeSeen, 'true'),
-    ]);
+    // Durable store first — guaranteed to persist across app exits.
+    await prefs.setString(SessionKeys.accessToken, accessToken);
+    await prefs.setString(SessionKeys.refreshToken, refreshToken);
+    await prefs.setString(SessionKeys.userRole, role);
+    await prefs.setString(SessionKeys.userId, userId);
+    await prefs.setString(SessionKeys.rememberMe, remember);
+    await prefs.setString(SessionKeys.welcomeSeen, 'true');
+    // Encrypted mirror — best-effort; keystore issues must not break login.
+    await _trySecureWrite(SessionKeys.accessToken, accessToken);
+    await _trySecureWrite(SessionKeys.refreshToken, refreshToken);
+    await _trySecureWrite(SessionKeys.userRole, role);
+    await _trySecureWrite(SessionKeys.userId, userId);
+    await _trySecureWrite(SessionKeys.rememberMe, remember);
+    await _trySecureWrite(SessionKeys.welcomeSeen, 'true');
   }
 
   static Future<void> saveTokensAfterRefresh({
@@ -50,20 +58,16 @@ final class SessionPersistence {
     required String refreshToken,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    await Future.wait([
-      _secure.write(key: SessionKeys.accessToken, value: accessToken),
-      _secure.write(key: SessionKeys.refreshToken, value: refreshToken),
-      prefs.setString(SessionKeys.accessToken, accessToken),
-      prefs.setString(SessionKeys.refreshToken, refreshToken),
-    ]);
+    await prefs.setString(SessionKeys.accessToken, accessToken);
+    await prefs.setString(SessionKeys.refreshToken, refreshToken);
+    await _trySecureWrite(SessionKeys.accessToken, accessToken);
+    await _trySecureWrite(SessionKeys.refreshToken, refreshToken);
   }
 
   static Future<void> setWelcomeSeen() async {
     final prefs = await SharedPreferences.getInstance();
-    await Future.wait([
-      _secure.write(key: SessionKeys.welcomeSeen, value: 'true'),
-      prefs.setString(SessionKeys.welcomeSeen, 'true'),
-    ]);
+    await prefs.setString(SessionKeys.welcomeSeen, 'true');
+    await _trySecureWrite(SessionKeys.welcomeSeen, 'true');
   }
 
   /// Clears auth credentials but keeps welcome flow state (matches profile sign-out).
@@ -97,38 +101,40 @@ final class SessionPersistence {
     }
   }
 
+  static Future<String?> _trySecureRead(String key) async {
+    try {
+      return await _secure.read(key: key);
+    } catch (_) {
+      return null;
+    }
+  }
+
   static Future<void> _rehydrateSecureFromPrefs(SharedPreferences prefs) async {
     final access = prefs.getString(SessionKeys.accessToken);
     final refresh = prefs.getString(SessionKeys.refreshToken);
     final role = prefs.getString(SessionKeys.userRole);
     final uid = prefs.getString(SessionKeys.userId);
     if (access == null) return;
-    await Future.wait([
-      _secure.write(key: SessionKeys.accessToken, value: access),
-      if (refresh != null)
-        _secure.write(key: SessionKeys.refreshToken, value: refresh),
-      if (role != null) _secure.write(key: SessionKeys.userRole, value: role),
-      if (uid != null) _secure.write(key: SessionKeys.userId, value: uid),
-    ]);
+    await _trySecureWrite(SessionKeys.accessToken, access);
+    if (refresh != null) await _trySecureWrite(SessionKeys.refreshToken, refresh);
+    if (role != null) await _trySecureWrite(SessionKeys.userRole, role);
+    if (uid != null) await _trySecureWrite(SessionKeys.userId, uid);
   }
 
   static Future<void> _syncPrefsFromSecure(SharedPreferences prefs) async {
-    final access = await _secure.read(key: SessionKeys.accessToken);
+    final access = await _trySecureRead(SessionKeys.accessToken);
     if (access == null) return;
-    final refresh = await _secure.read(key: SessionKeys.refreshToken);
-    final role = await _secure.read(key: SessionKeys.userRole);
-    final uid = await _secure.read(key: SessionKeys.userId);
-    final remember = await _secure.read(key: SessionKeys.rememberMe);
-    final welcome = await _secure.read(key: SessionKeys.welcomeSeen);
-    await Future.wait([
-      prefs.setString(SessionKeys.accessToken, access),
-      if (refresh != null)
-        prefs.setString(SessionKeys.refreshToken, refresh),
-      if (role != null) prefs.setString(SessionKeys.userRole, role),
-      if (uid != null) prefs.setString(SessionKeys.userId, uid),
-      if (remember != null) prefs.setString(SessionKeys.rememberMe, remember),
-      if (welcome != null) prefs.setString(SessionKeys.welcomeSeen, welcome),
-    ]);
+    final refresh = await _trySecureRead(SessionKeys.refreshToken);
+    final role = await _trySecureRead(SessionKeys.userRole);
+    final uid = await _trySecureRead(SessionKeys.userId);
+    final remember = await _trySecureRead(SessionKeys.rememberMe);
+    final welcome = await _trySecureRead(SessionKeys.welcomeSeen);
+    await prefs.setString(SessionKeys.accessToken, access);
+    if (refresh != null) await prefs.setString(SessionKeys.refreshToken, refresh);
+    if (role != null) await prefs.setString(SessionKeys.userRole, role);
+    if (uid != null) await prefs.setString(SessionKeys.userId, uid);
+    if (remember != null) await prefs.setString(SessionKeys.rememberMe, remember);
+    if (welcome != null) await prefs.setString(SessionKeys.welcomeSeen, welcome);
   }
 
   static String? _extractRoleFromJwt(String token) {
@@ -161,39 +167,38 @@ final class SessionPersistence {
         String? remember,
       })> loadForStartup() async {
     final prefs = await SharedPreferences.getInstance();
+    // Prefs is the source of truth; secure storage is a best-effort mirror.
     final remember = prefs.getString(SessionKeys.rememberMe) ??
-        await _secure.read(key: SessionKeys.rememberMe);
+        await _trySecureRead(SessionKeys.rememberMe);
 
-    var token = await _secure.read(key: SessionKeys.accessToken) ??
-        prefs.getString(SessionKeys.accessToken);
-    var role = await _secure.read(key: SessionKeys.userRole) ??
-        prefs.getString(SessionKeys.userRole);
+    var token = prefs.getString(SessionKeys.accessToken) ??
+        await _trySecureRead(SessionKeys.accessToken);
+    var role = prefs.getString(SessionKeys.userRole) ??
+        await _trySecureRead(SessionKeys.userRole);
 
     if (token != null &&
-        await _secure.read(key: SessionKeys.accessToken) == null) {
+        await _trySecureRead(SessionKeys.accessToken) == null) {
       await _rehydrateSecureFromPrefs(prefs);
     } else if (token != null &&
         prefs.getString(SessionKeys.accessToken) == null) {
       await _syncPrefsFromSecure(prefs);
     }
 
-    token = await _secure.read(key: SessionKeys.accessToken) ??
-        prefs.getString(SessionKeys.accessToken);
-    role = await _secure.read(key: SessionKeys.userRole) ??
-        prefs.getString(SessionKeys.userRole);
+    token = prefs.getString(SessionKeys.accessToken) ??
+        await _trySecureRead(SessionKeys.accessToken);
+    role = prefs.getString(SessionKeys.userRole) ??
+        await _trySecureRead(SessionKeys.userRole);
     if (token != null && (role == null || role.trim().isEmpty)) {
       final extractedRole = _extractRoleFromJwt(token);
       if (extractedRole != null) {
         role = extractedRole;
-        await Future.wait([
-          _secure.write(key: SessionKeys.userRole, value: extractedRole),
-          prefs.setString(SessionKeys.userRole, extractedRole),
-        ]);
+        await prefs.setString(SessionKeys.userRole, extractedRole);
+        await _trySecureWrite(SessionKeys.userRole, extractedRole);
       }
     }
 
     var welcomeSeen = prefs.getString(SessionKeys.welcomeSeen) ??
-        await _secure.read(key: SessionKeys.welcomeSeen);
+        await _trySecureRead(SessionKeys.welcomeSeen);
     if (welcomeSeen != null &&
         prefs.getString(SessionKeys.welcomeSeen) == null) {
       await prefs.setString(SessionKeys.welcomeSeen, welcomeSeen);

@@ -1,11 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_endpoints.dart';
 import '../storage/session_persistence.dart';
 
 class DioClient {
   late final Dio dio;
   final _storage = const FlutterSecureStorage();
+
+  Future<String?> _readToken(String key) async {
+    try {
+      final v = await _storage.read(key: key);
+      if (v != null) return v;
+    } catch (_) {}
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(key);
+  }
 
   DioClient() {
     dio = Dio(
@@ -19,7 +29,7 @@ class DioClient {
 
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final token = await _storage.read(key: 'access_token');
+        final token = await _readToken(SessionKeys.accessToken);
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
@@ -29,7 +39,7 @@ class DioClient {
         if (error.response?.statusCode == 401) {
           final refreshed = await _refreshToken();
           if (refreshed) {
-            final token = await _storage.read(key: 'access_token');
+            final token = await _readToken(SessionKeys.accessToken);
             error.requestOptions.headers['Authorization'] = 'Bearer $token';
             final retry = await dio.request(
               error.requestOptions.path,
@@ -50,7 +60,7 @@ class DioClient {
 
   Future<bool> _refreshToken() async {
     try {
-      final refreshToken = await _storage.read(key: 'refresh_token');
+      final refreshToken = await _readToken(SessionKeys.refreshToken);
       if (refreshToken == null) return false;
       final response = await Dio().post(
         '${ApiEndpoints.baseUrl}${ApiEndpoints.refresh}',
