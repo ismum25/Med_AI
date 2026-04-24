@@ -131,7 +131,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
             Text("Today's Schedule", style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             if (todayAppts.isEmpty)
-              _EmptyState(
+              const _EmptyState(
                 icon: Icons.event_available_outlined,
                 message: 'No appointments today',
               )
@@ -149,23 +149,45 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                 }),
               ),
             const SizedBox(height: 24),
-            Text('Reports Awaiting Review', style: Theme.of(context).textTheme.titleLarge),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    'Reports awaiting review',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                if (_pendingReports.isNotEmpty)
+                  TextButton(
+                    onPressed: () => context.go(AppRoutes.doctorReview),
+                    child: const Text('View all'),
+                  ),
+              ],
+            ),
             const SizedBox(height: 12),
             if (_pendingReports.isEmpty)
-              _EmptyState(
+              const _EmptyState(
                 icon: Icons.assignment_turned_in_outlined,
                 message: 'No reports awaiting review',
               )
             else
               Column(
                 children: List.generate(
-                  _pendingReports.length > 5 ? 5 : _pendingReports.length,
+                  _pendingReports.length > 3 ? 3 : _pendingReports.length,
                   (i) {
                     final r = _pendingReports[i];
+                    final n =
+                        _pendingReports.length > 3 ? 3 : _pendingReports.length;
                     return Padding(
-                      padding: EdgeInsets.only(
-                          bottom: i < (_pendingReports.length > 5 ? 4 : _pendingReports.length - 1) ? 8 : 0),
-                      child: _PendingReportCard(report: r),
+                      padding:
+                          EdgeInsets.only(bottom: i < n - 1 ? 8 : 0),
+                      child: _PendingReportCard(
+                        report: r,
+                        onTap: () => context.push(
+                          AppRoutes.doctorReviewDetail('${r['id']}'),
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -279,8 +301,9 @@ class _ScheduleCard extends StatelessWidget {
 // ─────────────────────────────────────────────
 class _PendingReportCard extends StatelessWidget {
   final Map<String, dynamic> report;
+  final VoidCallback onTap;
 
-  const _PendingReportCard({required this.report});
+  const _PendingReportCard({required this.report, required this.onTap});
 
   String _timeAgo(String createdAt) {
     final dt = DateTime.parse(createdAt).toLocal();
@@ -300,57 +323,68 @@ class _PendingReportCard extends StatelessWidget {
     final createdAt = report['created_at'] as String? ?? DateTime.now().toIso8601String();
     final displayType = type.replaceAll('_', ' ');
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+    return Material(
+      color: AppColors.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.onSurface.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.onSurface.withValues(alpha: 0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.tertiary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.assignment_outlined, color: AppColors.tertiary, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.manrope(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.onSurface,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.tertiary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                Text(
-                  displayType[0].toUpperCase() + displayType.substring(1),
-                  style: GoogleFonts.inter(fontSize: 12, color: AppColors.onSurfaceVariant),
+                child: const Icon(Icons.assignment_outlined, color: AppColors.tertiary, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.manrope(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      displayType.isEmpty
+                          ? ''
+                          : displayType[0].toUpperCase() + displayType.substring(1),
+                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.onSurfaceVariant),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              Text(
+                _timeAgo(createdAt),
+                style: GoogleFonts.inter(fontSize: 11, color: AppColors.outline),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.outline, size: 20),
+            ],
           ),
-          Text(
-            _timeAgo(createdAt),
-            style: GoogleFonts.inter(fontSize: 11, color: AppColors.outline),
-          ),
-        ],
+        ),
       ),
     );
   }
