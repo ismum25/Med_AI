@@ -8,14 +8,19 @@ import '../bloc/appointment_event.dart';
 import '../bloc/appointment_state.dart';
 
 class AppointmentListPage extends StatelessWidget {
-  const AppointmentListPage({super.key});
+  /// When false (e.g. doctor shell), hides the patient "Book" FAB.
+  final bool showBookFab;
+
+  const AppointmentListPage({super.key, this.showBookFab = true});
+
+  String get _appBarTitle => showBookFab ? 'My Appointments' : 'Appointments';
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<AppointmentBloc>()..add(LoadAppointments()),
       child: Scaffold(
-        appBar: AppBar(title: const Text('My Appointments')),
+        appBar: AppBar(title: Text(_appBarTitle)),
         body: BlocBuilder<AppointmentBloc, AppointmentState>(
           builder: (context, state) {
             if (state is AppointmentLoading) {
@@ -70,11 +75,13 @@ class AppointmentListPage extends StatelessWidget {
             return const SizedBox.shrink();
           },
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {},
-          icon: const Icon(Icons.add),
-          label: const Text('Book'),
-        ),
+        floatingActionButton: showBookFab
+            ? FloatingActionButton.extended(
+                onPressed: () {},
+                icon: const Icon(Icons.add),
+                label: const Text('Book'),
+              )
+            : null,
       ),
     );
   }
