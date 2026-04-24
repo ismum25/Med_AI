@@ -119,16 +119,23 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
       ],
     );
 
-class HealthcareApp extends StatelessWidget {
+class HealthcareApp extends StatefulWidget {
   final String initialRoute;
   const HealthcareApp({super.key, required this.initialRoute});
+
+  @override
+  State<HealthcareApp> createState() => _HealthcareAppState();
+}
+
+class _HealthcareAppState extends State<HealthcareApp> {
+  late final GoRouter _router = _buildRouter(widget.initialRoute);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Healthcare Platform',
       theme: AppTheme.lightTheme,
-      routerConfig: _buildRouter(initialRoute),
+      routerConfig: _router,
       debugShowCheckedModeBanner: false,
     );
   }

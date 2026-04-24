@@ -29,6 +29,10 @@ import 'presentation/reports/bloc/report_bloc.dart';
 final sl = GetIt.instance;
 
 Future<void> init() async {
+  if (sl.isRegistered<DioClient>()) {
+    await sl.reset();
+  }
+
   // Network
   sl.registerLazySingleton<DioClient>(() => DioClient());
 
