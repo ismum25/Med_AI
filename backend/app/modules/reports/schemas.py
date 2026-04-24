@@ -44,6 +44,10 @@ class VerifyReportRequest(BaseModel):
     notes: Optional[str] = None
 
 
+class UpdateReportRequest(BaseModel):
+    title: Optional[str] = None
+
+
 class UploadReportResponse(BaseModel):
     report_id: uuid.UUID
     message: str

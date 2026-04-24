@@ -6,7 +6,7 @@ from sqlalchemy import select, and_
 from fastapi import HTTPException, UploadFile
 
 from app.modules.reports.models import MedicalReport, ExtractedReportData
-from app.modules.reports.schemas import VerifyReportRequest, ReportResponse
+from app.modules.reports.schemas import VerifyReportRequest, UpdateReportRequest, ReportResponse
 from app.modules.reports import storage
 
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/tiff"}
@@ -124,6 +124,22 @@ async def get_pending_review_reports(doctor_id: uuid.UUID, db: AsyncSession) -> 
         .order_by(MedicalReport.created_at.desc())
     )
     return result.scalars().all()
+
+
+async def update_report(
+    report_id: uuid.UUID,
+    requester_id: uuid.UUID,
+    requester_role: str,
+    data: UpdateReportRequest,
+    db: AsyncSession,
+) -> MedicalReport:
+    report = await get_report_by_id(report_id, requester_id, requester_role, db)
+    if data.title is not None:
+        stripped = data.title.strip()
+        report.title = stripped or None
+    await db.commit()
+    await db.refresh(report)
+    return report
 
 
 async def verify_report(
