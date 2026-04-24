@@ -95,19 +95,6 @@ final class SessionPersistence {
     }
   }
 
-  static Future<void> _clearTokensOnly() async {
-    final prefs = await SharedPreferences.getInstance();
-    for (final k in [
-      SessionKeys.accessToken,
-      SessionKeys.refreshToken,
-      SessionKeys.userRole,
-      SessionKeys.userId,
-    ]) {
-      await _secure.delete(key: k);
-      await prefs.remove(k);
-    }
-  }
-
   static Future<void> _rehydrateSecureFromPrefs(SharedPreferences prefs) async {
     final access = prefs.getString(SessionKeys.accessToken);
     final refresh = prefs.getString(SessionKeys.refreshToken);
@@ -154,10 +141,6 @@ final class SessionPersistence {
     final prefs = await SharedPreferences.getInstance();
     final remember = prefs.getString(SessionKeys.rememberMe) ??
         await _secure.read(key: SessionKeys.rememberMe);
-
-    if (remember == 'false') {
-      await _clearTokensOnly();
-    }
 
     var token = await _secure.read(key: SessionKeys.accessToken) ??
         prefs.getString(SessionKeys.accessToken);

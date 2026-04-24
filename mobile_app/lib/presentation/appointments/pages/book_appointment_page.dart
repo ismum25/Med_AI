@@ -24,6 +24,14 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
   DateTime? _selectedDate;
   List<AppointmentSlotEntity> _slots = const [];
   DateTime? _selectedSlotUtc;
+  int _slotDurationMins = 30;
+
+  String _slotRangeLabel(AppointmentSlotEntity slot) {
+    final start = slot.startAtUtc.toLocal();
+    final end = start.add(Duration(minutes: _slotDurationMins));
+    final f = DateFormat('hh:mm a');
+    return '${f.format(start)} - ${f.format(end)}';
+  }
 
   Future<void> _pickDate(BuildContext context, BookAppointmentArgs args) async {
     final bloc = context.read<AppointmentBloc>();
@@ -78,6 +86,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
             } else if (state is DoctorSlotsLoaded) {
               setState(() {
                 _slots = state.payload.slots;
+                _slotDurationMins = state.payload.slotDurationMins;
                 if (_selectedSlotUtc != null &&
                     !_slots.any((s) => s.startAtUtc == _selectedSlotUtc)) {
                   _selectedSlotUtc = null;
@@ -202,7 +211,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
                       children: _slots
                           .map(
                             (slot) => ChoiceChip(
-                              label: Text(slot.labelLocal),
+                              label: Text(_slotRangeLabel(slot)),
                               selected: _selectedSlotUtc == slot.startAtUtc,
                               onSelected: bookingLoading
                                   ? null
