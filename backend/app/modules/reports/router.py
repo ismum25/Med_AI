@@ -69,7 +69,8 @@ async def get_report(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return await service.get_report_by_id(report_id, current_user.id, current_user.role, db)
+    report = await service.get_report_by_id(report_id, current_user.id, current_user.role, db)
+    return await service.report_to_response(report, db, current_user.role)
 
 
 @router.get("/{report_id}/download")
@@ -89,4 +90,5 @@ async def verify_report(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(require_doctor),
 ):
-    return await service.verify_report(report_id, current_user.id, data, db)
+    report = await service.verify_report(report_id, current_user.id, data, db)
+    return await service.report_to_response(report, db, "doctor")

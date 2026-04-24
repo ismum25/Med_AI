@@ -6,7 +6,7 @@ from sqlalchemy import select, and_
 from fastapi import HTTPException, UploadFile
 
 from app.modules.reports.models import MedicalReport, ExtractedReportData
-from app.modules.reports.schemas import VerifyReportRequest
+from app.modules.reports.schemas import VerifyReportRequest, ReportResponse
 from app.modules.reports import storage
 
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/tiff"}
@@ -81,6 +81,19 @@ async def get_report_by_id(
     if requester_role == "patient" and report.patient_id != requester_id:
         raise HTTPException(status_code=403, detail="Access denied")
     return report
+
+
+async def report_to_response(
+    report: MedicalReport, db: AsyncSession, requester_role: str
+) -> ReportResponse:
+    extracted: Optional[dict] = None
+    if requester_role == "doctor":
+        er = await db.execute(select(ExtractedReportData).where(ExtractedReportData.report_id == report.id))
+        row = er.scalar_one_or_none()
+        if row:
+            extracted = row.data
+    base = ReportResponse.model_validate(report)
+    return base.model_copy(update={"extracted_data": extracted})
 
 
 async def get_report_download_url(
