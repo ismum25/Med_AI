@@ -52,7 +52,10 @@ class _DoctorSchedulePageState extends State<DoctorSchedulePage> {
         Expanded(
           child: _segment == 0
               ? const DoctorWeeklyHoursPage()
-              : const AppointmentListPage(showBookFab: false),
+              : const AppointmentListPage(
+                  showBookFab: false,
+                  showFindDoctorSection: false,
+                ),
         ),
       ],
     );
