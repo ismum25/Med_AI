@@ -15,7 +15,7 @@ class ApiEndpoints {
   static const String myPatients = '/users/me/patients';
   static const String doctorProfileUpdate = '/users/me/doctor-profile';
 
-  static const String appointments = '/appointments';
+  static const String appointments = '/appointments/';
   static String appointmentById(String id) => '/appointments/$id';
   static String doctorSlots(String doctorUserId) =>
       '/appointments/doctors/$doctorUserId/slots';
