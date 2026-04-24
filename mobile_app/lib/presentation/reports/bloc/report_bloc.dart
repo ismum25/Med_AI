@@ -15,6 +15,7 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
           fileName: event.fileName,
           mimeType: event.mimeType,
           reportType: event.reportType,
+          title: event.title,
         );
         emit(ReportUploaded(result));
       } catch (e) {
