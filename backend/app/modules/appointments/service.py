@@ -1,14 +1,127 @@
 import uuid
+from datetime import date, datetime, time, timedelta, timezone
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from fastapi import HTTPException
 
 from app.modules.appointments.models import Appointment
-from app.modules.appointments.schemas import AppointmentResponse, CreateAppointmentRequest, UpdateAppointmentRequest
+from app.modules.appointments.schemas import (
+    AppointmentResponse,
+    CreateAppointmentRequest,
+    DoctorSlotsResponse,
+    SlotItem,
+    UpdateAppointmentRequest,
+)
 from app.modules.auth.models import User
 from app.modules.users.models import DoctorProfile
 from app.modules.users import availability as avail
+
+SLOT_DURATION_MINUTES = 30
+
+
+def _slot_starts_for_day(raw_slots: dict, tz_name: str, local_date: date) -> list[datetime]:
+    weekly = avail.try_parse_weekly(raw_slots)
+    if weekly is None:
+        return []
+    key = avail.WEEKDAY_KEYS[local_date.weekday()]
+    intervals: List[str] = getattr(weekly, key)
+    tz = avail.resolve_zoneinfo(tz_name)
+    starts: list[datetime] = []
+    for interval in intervals:
+        start_m, end_m = avail.parse_interval_string(interval)
+        cursor = start_m
+        while cursor + SLOT_DURATION_MINUTES <= end_m:
+            hh, mm = divmod(cursor, 60)
+            local_start = datetime.combine(local_date, time(hour=hh, minute=mm), tzinfo=tz)
+            starts.append(local_start)
+            cursor += SLOT_DURATION_MINUTES
+    starts.sort()
+    return starts
+
+
+async def get_doctor_slots_for_date(
+    doctor_user_id: uuid.UUID, local_date: date, db: AsyncSession
+) -> DoctorSlotsResponse:
+    result = await db.execute(
+        select(User).where(User.id == doctor_user_id, User.role == "doctor")
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Doctor not found")
+
+    prof_result = await db.execute(
+        select(DoctorProfile).where(DoctorProfile.user_id == doctor_user_id)
+    )
+    dprof = prof_result.scalar_one_or_none()
+    if not dprof:
+        raise HTTPException(status_code=404, detail="Doctor profile not found")
+
+    raw_slots = dprof.available_slots
+    tz_name = (dprof.availability_timezone or "").strip()
+    if (
+        avail.legacy_availability_not_configured(raw_slots)
+        or avail.explicit_empty_week(raw_slots)
+        or not tz_name
+        or avail.try_parse_weekly(raw_slots) is None
+    ):
+        return DoctorSlotsResponse(
+            doctor_id=doctor_user_id,
+            date=local_date,
+            timezone=tz_name or None,
+            slot_duration_mins=SLOT_DURATION_MINUTES,
+            slots=[],
+        )
+
+    slot_starts_local = _slot_starts_for_day(raw_slots, tz_name, local_date)
+    if not slot_starts_local:
+        return DoctorSlotsResponse(
+            doctor_id=doctor_user_id,
+            date=local_date,
+            timezone=tz_name,
+            slot_duration_mins=SLOT_DURATION_MINUTES,
+            slots=[],
+        )
+
+    tz = avail.resolve_zoneinfo(tz_name)
+    day_start_local = datetime.combine(local_date, time.min, tzinfo=tz)
+    next_day_local = day_start_local + timedelta(days=1)
+    day_start_utc = day_start_local.astimezone(timezone.utc)
+    next_day_utc = next_day_local.astimezone(timezone.utc)
+
+    booked = await db.execute(
+        select(Appointment.scheduled_at).where(
+            and_(
+                Appointment.doctor_id == doctor_user_id,
+                Appointment.scheduled_at >= day_start_utc,
+                Appointment.scheduled_at < next_day_utc,
+                Appointment.status.not_in(["cancelled", "no_show"]),
+            )
+        )
+    )
+    booked_starts_utc = {avail.normalize_utc(row[0]) for row in booked.all()}
+    now_utc = datetime.now(timezone.utc)
+
+    slot_items: list[SlotItem] = []
+    for local_start in slot_starts_local:
+        utc_start = local_start.astimezone(timezone.utc)
+        if utc_start <= now_utc:
+            continue
+        if utc_start in booked_starts_utc:
+            continue
+        slot_items.append(
+            SlotItem(
+                label_local=local_start.strftime("%I:%M %p").lstrip("0"),
+                start_at_utc=utc_start,
+            )
+        )
+
+    return DoctorSlotsResponse(
+        doctor_id=doctor_user_id,
+        date=local_date,
+        timezone=tz_name,
+        slot_duration_mins=SLOT_DURATION_MINUTES,
+        slots=slot_items,
+    )
 
 
 async def create_appointment(patient_id: uuid.UUID, data: CreateAppointmentRequest, db: AsyncSession) -> Appointment:
@@ -25,7 +138,7 @@ async def create_appointment(patient_id: uuid.UUID, data: CreateAppointmentReque
     utc_start = avail.normalize_utc(data.scheduled_at)
 
     if avail.legacy_availability_not_configured(raw_slots):
-        pass
+        raise HTTPException(status_code=400, detail="Doctor has not configured bookable slots yet")
     elif avail.try_parse_weekly(raw_slots) is None:
         raise HTTPException(status_code=400, detail="Doctor availability is misconfigured")
     elif avail.explicit_empty_week(raw_slots):

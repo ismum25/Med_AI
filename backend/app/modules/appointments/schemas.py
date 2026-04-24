@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime
+from typing import Optional, List
+from datetime import datetime, date
 import uuid
 
 
@@ -38,3 +38,16 @@ class AppointmentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class SlotItem(BaseModel):
+    label_local: str
+    start_at_utc: datetime
+
+
+class DoctorSlotsResponse(BaseModel):
+    doctor_id: uuid.UUID
+    date: date
+    timezone: Optional[str] = None
+    slot_duration_mins: int
+    slots: List[SlotItem]

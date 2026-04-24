@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
+from datetime import date
 import uuid
 
 from app.database.session import get_db
@@ -31,6 +32,18 @@ async def list_appointments(
         current_user.id, current_user.role, db, status
     )
     return await service.appointments_to_responses(appts, current_user.role, db)
+
+
+@router.get(
+    "/doctors/{doctor_user_id}/slots", response_model=schemas.DoctorSlotsResponse
+)
+async def list_doctor_slots(
+    doctor_user_id: uuid.UUID,
+    date_value: date = Query(..., alias="date"),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(require_patient),
+):
+    return await service.get_doctor_slots_for_date(doctor_user_id, date_value, db)
 
 
 @router.get("/{appointment_id}", response_model=schemas.AppointmentResponse)
