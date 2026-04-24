@@ -130,7 +130,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
             const SizedBox(height: 12),
             _NextAppointmentCard(
               appointment: nextAppt,
-              onBook: () => context.push(AppRoutes.bookAppointment),
+              onBook: () => context.go(AppRoutes.appointments),
               onView: () => context.go(AppRoutes.appointments),
             ),
             const SizedBox(height: 24),
@@ -150,7 +150,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   child: _QuickActionCard(
                     icon: Icons.add_rounded,
                     label: 'Book Appointment',
-                    onTap: () => context.push(AppRoutes.bookAppointment),
+                    onTap: () => context.go(AppRoutes.appointments),
                   ),
                 ),
               ],
