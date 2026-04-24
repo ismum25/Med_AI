@@ -9,6 +9,8 @@ class ApiEndpoints {
   static const String me = '/auth/me';
 
   static const String doctors = '/users/doctors';
+  static const String doctorSpecializations = '/users/doctors/specializations';
+  static String doctorById(String id) => '/users/doctors/$id';
   static const String myProfile = '/users/me/profile';
   static const String myPatients = '/users/me/patients';
   static const String doctorProfileUpdate = '/users/me/doctor-profile';

@@ -6,6 +6,8 @@ class AppRoutes {
   static const String doctorDashboard = '/doctor/dashboard';
   static const String appointments = '/appointments';
   static const String bookAppointment = '/appointments/book';
+  static String patientDoctorProfile(String doctorProfileId) =>
+      '/appointments/doctor/$doctorProfileId';
   static const String reports = '/reports';
   static const String uploadReport = '/reports/upload';
   static const String chat = '/chat';
