@@ -41,6 +41,17 @@ class Settings(BaseSettings):
 
     ANTHROPIC_API_KEY: str = ""
     LLM_MODEL: str = "claude-haiku-4-5-20251001"
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+    OPENROUTER_MODEL: str = "anthropic/claude-3.5-haiku"
+    OPENROUTER_SITE_URL: str = ""
+    OPENROUTER_APP_NAME: str = "HealthcareAPI"
+
+    OCR_ENGINE_PRIORITY: str = "paddle,surya,tesseract"
+    OCR_LANG: str = "en"
+    OCR_USE_GPU: bool = False
+    OCR_PDF_DPI: int = 250
+    OCR_SURYA_FALLBACK_CONFIDENCE: float = 70.0
 
     SENDGRID_API_KEY: str = ""
     FROM_EMAIL: str = "noreply@healthcare.com"

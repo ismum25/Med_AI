@@ -13,11 +13,7 @@ import uuid
 from app.database.session import get_db
 from app.core.security import decode_access_token
 
-# Both schemes registered with auto_error=False so whichever the caller used wins.
-# - OAuth2PasswordBearer: OpenAPI-standard password flow (kept for clients that use it)
-# - HTTPBearer: a plain "paste token" box in /docs for quick manual testing
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
-bearer_scheme = HTTPBearer(auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 
 async def get_current_user(

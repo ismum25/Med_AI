@@ -11,6 +11,8 @@ from app.modules.reports import schemas, service
 router = APIRouter()
 
 
+@router.post("/upload", response_model=schemas.UploadReportResponse, status_code=201, include_in_schema=False)
+@router.post("", response_model=schemas.UploadReportResponse, status_code=201, include_in_schema=False)
 @router.post("/", response_model=schemas.UploadReportResponse, status_code=201)
 async def upload_report(
     file: UploadFile = File(...),
@@ -81,6 +83,15 @@ async def download_report(
 ):
     url = await service.get_report_download_url(report_id, current_user.id, current_user.role, db)
     return {"download_url": url}
+
+
+@router.get("/{report_id}/extracted-data", response_model=schemas.ExtractedDataResponse)
+async def get_extracted_data(
+    report_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return await service.get_extracted_data(report_id, current_user.id, current_user.role, db)
 
 
 @router.patch("/{report_id}", response_model=schemas.ReportResponse)
