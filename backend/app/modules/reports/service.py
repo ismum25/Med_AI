@@ -90,6 +90,25 @@ async def get_report_download_url(
     return storage.get_presigned_url(report.file_url)
 
 
+async def get_extracted_data(
+    report_id: uuid.UUID,
+    requester_id: uuid.UUID,
+    requester_role: str,
+    db: AsyncSession,
+) -> ExtractedReportData:
+    # Reuse existing ownership/role checks before revealing extracted payload.
+    await get_report_by_id(report_id, requester_id, requester_role, db)
+
+    result = await db.execute(
+        select(ExtractedReportData).where(ExtractedReportData.report_id == report_id)
+    )
+    extracted = result.scalar_one_or_none()
+    if not extracted:
+        raise HTTPException(status_code=404, detail="Extracted data not found")
+
+    return extracted
+
+
 async def verify_report(
     report_id: uuid.UUID, doctor_id: uuid.UUID, data: VerifyReportRequest, db: AsyncSession
 ) -> MedicalReport:
