@@ -141,7 +141,7 @@ class _HealthcareAppState extends State<HealthcareApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Healthcare Platform',
+      title: 'Health Care',
       theme: AppTheme.lightTheme,
       routerConfig: _router,
       debugShowCheckedModeBanner: false,

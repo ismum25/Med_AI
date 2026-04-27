@@ -6,8 +6,13 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Healthcare Platform',
+  title: 'Health Care',
   description: 'Manage appointments, reports, and health data',
+  icons: {
+    icon: '/logo-192.png',
+    shortcut: '/logo-192.png',
+    apple: '/logo-192.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { authApi } from '@/lib/api-client';
@@ -82,10 +83,10 @@ export default function Sidebar() {
   return (
     <aside className="flex flex-col w-64 h-screen bg-white border-r border-gray-200 px-4 py-6">
       <div className="flex items-center gap-3 mb-8 px-2">
-        <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-          <span className="text-white text-sm font-bold">H</span>
+        <div className="w-8 h-8 rounded-lg overflow-hidden">
+          <Image src="/logo-192.png" alt="Health Care logo" width={32} height={32} />
         </div>
-        <span className="font-semibold text-gray-900">HealthCare</span>
+        <span className="font-semibold text-gray-900">Health Care</span>
       </div>
 
       <nav className="flex-1 space-y-1">
