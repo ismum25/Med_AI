@@ -23,7 +23,7 @@ logging.basicConfig(level=settings.LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Healthcare Platform API",
+    title="Health Care API",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
