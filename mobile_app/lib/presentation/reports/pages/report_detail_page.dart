@@ -104,6 +104,28 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     );
   }
 
+  String _formatExtractedValue(dynamic value) {
+    if (value == null) return '—';
+    if (value is List) {
+      if (value.isEmpty) return '—';
+      return value.map((v) => _formatExtractedValue(v)).join(', ');
+    }
+    if (value is Map<String, dynamic>) {
+      if (value.isEmpty) return '—';
+      return value.entries
+          .map((e) => '${e.key}: ${_formatExtractedValue(e.value)}')
+          .join(' | ');
+    }
+    final s = value.toString().trim();
+    return s.isEmpty ? '—' : s;
+  }
+
+  String _labelizeKey(String key) {
+    final cleaned = key.replaceAll('_', ' ').trim();
+    if (cleaned.isEmpty) return key;
+    return cleaned[0].toUpperCase() + cleaned.substring(1);
+  }
+
   Widget _buildBody() {
     if (_loading) {
       return const Center(child: CircularProgressIndicator(color: AppColors.primary));
@@ -124,6 +146,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     final fileName = r['file_name'] as String?;
     final reportDate = r['report_date'] as String?;
     final createdAt = r['created_at'] as String?;
+    final extractedData = r['extracted_data'] as Map<String, dynamic>?;
     final displayType = type.replaceAll('_', ' ');
 
     String createdStr = '';
@@ -169,6 +192,46 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
               ],
             ),
           ),
+          if ((status == 'extracted' || status == 'verified') &&
+              extractedData != null &&
+              extractedData.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            _card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.auto_awesome_rounded,
+                          size: 18, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Extracted data',
+                        style: GoogleFonts.manrope(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  ...extractedData.entries.map(
+                    (entry) => Column(
+                      children: [
+                        _metaRow(
+                          Icons.analytics_outlined,
+                          _labelizeKey(entry.key),
+                          _formatExtractedValue(entry.value),
+                        ),
+                        if (entry.key != extractedData.keys.last) _divider(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
