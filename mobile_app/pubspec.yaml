@@ -1,5 +1,5 @@
 name: healthcare_app
-description: Healthcare Platform Mobile App
+description: Health Care Mobile App
 
 publish_to: 'none'
 version: 1.0.0+1
@@ -21,6 +21,7 @@ dependencies:
   cached_network_image: ^3.3.1
   intl: ^0.19.0
   shared_preferences: ^2.2.3
+  flutter_dotenv: ^5.1.0
   json_annotation: ^4.9.0
   google_fonts: ^6.2.1
   url_launcher: ^6.3.1
@@ -37,4 +38,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - .env
     - assets/images/
