@@ -1,6 +1,14 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiEndpoints {
-  // 10.0.2.2 = host machine from Android emulator; use actual LAN IP for physical device
-  static const String baseUrl = 'http://10.0.2.2:8000/api/v1';
+  // Configure in mobile_app/.env as API_BASE_URL.
+  static String get baseUrl {
+    final raw = dotenv.env['API_BASE_URL']?.trim();
+    if (raw == null || raw.isEmpty) {
+      return 'http://10.0.2.2:8000/api/v1';
+    }
+    return raw;
+  }
 
   static const String register = '/auth/register';
   static const String login = '/auth/login';
