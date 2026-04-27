@@ -87,7 +87,7 @@ async def report_to_response(
     report: MedicalReport, db: AsyncSession, requester_role: str
 ) -> ReportResponse:
     extracted: Optional[dict] = None
-    if requester_role == "doctor":
+    if requester_role in ("doctor", "patient"):
         er = await db.execute(select(ExtractedReportData).where(ExtractedReportData.report_id == report.id))
         row = er.scalar_one_or_none()
         if row:
