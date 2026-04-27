@@ -23,7 +23,10 @@ class DioClient {
         baseUrl: ApiEndpoints.baseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 60),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
       ),
     );
 
@@ -65,6 +68,7 @@ class DioClient {
       final response = await Dio().post(
         '${ApiEndpoints.baseUrl}${ApiEndpoints.refresh}',
         data: {'refresh_token': refreshToken},
+        options: Options(headers: {'ngrok-skip-browser-warning': 'true'}),
       );
       final data = response.data as Map<String, dynamic>;
       await SessionPersistence.saveTokensAfterRefresh(
