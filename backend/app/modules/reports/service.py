@@ -92,8 +92,23 @@ async def report_to_response(
         row = er.scalar_one_or_none()
         if row:
             extracted = row.data
-    base = ReportResponse.model_validate(report)
-    return base.model_copy(update={"extracted_data": extracted})
+    return ReportResponse(
+        id=report.id,
+        patient_id=report.patient_id,
+        uploaded_by=report.uploaded_by,
+        title=report.title,
+        report_type=report.report_type,
+        report_date=report.report_date,
+        file_name=report.file_name,
+        file_type=report.file_type,
+        ocr_status=report.ocr_status,
+        ocr_confidence=report.ocr_confidence,
+        verified_by=report.verified_by,
+        verified_at=report.verified_at,
+        notes=report.notes,
+        created_at=report.created_at,
+        extracted_data=extracted,
+    )
 
 
 async def get_report_download_url(
