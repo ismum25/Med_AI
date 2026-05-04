@@ -11,8 +11,6 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/healthcare
-      - SYNC_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/healthcare
       - REDIS_URL=redis://:redis@redis:6379/0
       - CELERY_BROKER_URL=redis://:redis@redis:6379/1
       - CELERY_RESULT_BACKEND=redis://:redis@redis:6379/2
@@ -36,8 +34,6 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/healthcare
-      - SYNC_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/healthcare
       - REDIS_URL=redis://:redis@redis:6379/0
       - CELERY_BROKER_URL=redis://:redis@redis:6379/1
       - CELERY_RESULT_BACKEND=redis://:redis@redis:6379/2
