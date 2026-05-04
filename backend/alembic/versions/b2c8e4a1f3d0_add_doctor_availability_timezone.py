@@ -1,7 +1,7 @@
 """add doctor_profiles.availability_timezone
 
 Revision ID: b2c8e4a1f3d0
-Revises: 947ab1fc1411
+Revises: a1f54c8be231
 Create Date: 2026-04-24
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "b2c8e4a1f3d0"
-down_revision: Union[str, None] = "947ab1fc1411"
+down_revision: Union[str, None] = "a1f54c8be231"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
