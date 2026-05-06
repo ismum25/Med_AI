@@ -1,4 +1,5 @@
 import uuid
+import json
 from typing import Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -6,26 +7,24 @@ from sqlalchemy import select
 TOOLS = [
     {
         "name": "get_patient_profile",
-        "description": "Retrieve a patient's profile information including name, blood type, and allergies.",
+        "description": "Retrieve a patient's profile information including name, blood type, and allergies. For patients, patient_id is optional.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "patient_id": {"type": "string", "description": "UUID of the patient"}
+                "patient_id": {"type": "string", "description": "UUID of the patient (optional for patients)"}
             },
-            "required": ["patient_id"],
         },
     },
     {
         "name": "get_medical_reports",
-        "description": "Get a list of verified medical reports for a patient with extracted data.",
+        "description": "Get a list of verified medical reports for a patient with extracted data. For patients, patient_id is optional.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "patient_id": {"type": "string", "description": "UUID of the patient"},
+                "patient_id": {"type": "string", "description": "UUID of the patient (optional for patients)"},
                 "report_type": {"type": "string", "description": "Filter by: blood_test, xray, mri, urine, other"},
                 "limit": {"type": "integer", "default": 5},
             },
-            "required": ["patient_id"],
         },
     },
     {
@@ -41,14 +40,14 @@ TOOLS = [
     },
     {
         "name": "search_lab_trends",
-        "description": "Get historical values for a specific lab parameter to show trends over time.",
+        "description": "Get historical values for a specific lab parameter to show trends over time. For patients, patient_id is optional.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "patient_id": {"type": "string", "description": "UUID of the patient"},
+                "patient_id": {"type": "string", "description": "UUID of the patient (optional for patients)"},
                 "parameter_name": {"type": "string", "description": "Lab parameter name e.g. Hemoglobin, Glucose"},
             },
-            "required": ["patient_id", "parameter_name"],
+            "required": ["parameter_name"],
         },
     },
 ]
@@ -66,7 +65,14 @@ async def execute_tool(
     from app.modules.appointments.models import Appointment
 
     if tool_name == "get_patient_profile":
-        patient_id = uuid.UUID(tool_input["patient_id"])
+        patient_id_raw = tool_input.get("patient_id")
+        if not patient_id_raw and caller_role == "patient":
+            patient_id = caller_id
+        elif patient_id_raw:
+            patient_id = uuid.UUID(patient_id_raw)
+        else:
+            return '{"error": "patient_id is required"}'
+
         if caller_role == "patient" and patient_id != caller_id:
             return '{"error": "Access denied"}'
 
@@ -83,16 +89,28 @@ async def execute_tool(
         })
 
     elif tool_name == "get_medical_reports":
-        patient_id = uuid.UUID(tool_input["patient_id"])
+        patient_id_raw = tool_input.get("patient_id")
+        if not patient_id_raw and caller_role == "patient":
+            patient_id = caller_id
+        elif patient_id_raw:
+            patient_id = uuid.UUID(patient_id_raw)
+        else:
+            return '{"error": "patient_id is required"}'
+
         if caller_role == "patient" and patient_id != caller_id:
             return '{"error": "Access denied"}'
 
         limit = tool_input.get("limit", 5)
         report_type = tool_input.get("report_type")
 
+        if caller_role == "patient":
+            status_filter = ("extracted", "verified")
+        else:
+            status_filter = ("verified",)
+
         query = select(MedicalReport).where(
             MedicalReport.patient_id == patient_id,
-            MedicalReport.ocr_status == "verified",
+            MedicalReport.ocr_status.in_(status_filter),
         )
         if report_type:
             query = query.where(MedicalReport.report_type == report_type)
@@ -107,14 +125,21 @@ async def execute_tool(
                 select(ExtractedReportData).where(ExtractedReportData.report_id == r.id)
             )
             ext = ext_result.scalar_one_or_none()
+            raw_excerpt = None
+            if not ext and r.ocr_raw_text:
+                raw_excerpt = r.ocr_raw_text[:800]
             summaries.append({
                 "report_id": str(r.id),
                 "title": r.title,
                 "type": r.report_type,
                 "date": r.report_date,
+                "file_name": r.file_name,
+                "file_type": r.file_type,
+                "ocr_status": r.ocr_status,
                 "data": ext.data if ext else None,
+                "raw_text_excerpt": raw_excerpt,
             })
-        return str(summaries)
+        return json.dumps(summaries, default=str)
 
     elif tool_name == "get_appointments":
         limit = tool_input.get("limit", 5)
@@ -139,7 +164,14 @@ async def execute_tool(
         } for a in appointments])
 
     elif tool_name == "search_lab_trends":
-        patient_id = uuid.UUID(tool_input["patient_id"])
+        patient_id_raw = tool_input.get("patient_id")
+        if not patient_id_raw and caller_role == "patient":
+            patient_id = caller_id
+        elif patient_id_raw:
+            patient_id = uuid.UUID(patient_id_raw)
+        else:
+            return '{"error": "patient_id is required"}'
+
         if caller_role == "patient" and patient_id != caller_id:
             return '{"error": "Access denied"}'
 
