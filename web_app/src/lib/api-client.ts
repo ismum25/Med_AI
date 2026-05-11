@@ -87,7 +87,7 @@ export const reportsApi = {
   list: () => api.get('/reports'),
   get: (id: string) => api.get(`/reports/${id}`),
   upload: (formData: FormData) =>
-    api.post('/reports', formData, {
+    api.post('/reports/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
   verify: (id: string) => api.post(`/reports/${id}/verify`),

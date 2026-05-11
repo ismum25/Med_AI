@@ -43,13 +43,8 @@ async def list_my_reports(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(require_patient),
 ):
-    reports = await service.get_patient_reports(
-        current_user.id, current_user.id, current_user.role, db
-    )
-    return [
-        await service.report_to_response(report, db, current_user.role)
-        for report in reports
-    ]
+    reports = await service.get_patient_reports(current_user.id, current_user.id, current_user.role, db)
+    return [service.report_to_response_basic(r).model_dump() for r in reports]
 
 
 # Two-segment path lives outside the single-segment /{report_id} capture,
@@ -60,7 +55,7 @@ async def get_pending_review_reports(
     current_user=Depends(require_doctor),
 ):
     reports = await service.get_pending_review_reports(current_user.id, db)
-    return [await service.report_to_response(report, db, "doctor") for report in reports]
+    return [service.report_to_response_basic(r).model_dump() for r in reports]
 
 
 @router.get("/patient/{patient_id}", response_model=List[schemas.ReportResponse])
@@ -69,13 +64,8 @@ async def get_patient_reports(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(require_doctor),
 ):
-    reports = await service.get_patient_reports(
-        patient_id, current_user.id, current_user.role, db
-    )
-    return [
-        await service.report_to_response(report, db, current_user.role)
-        for report in reports
-    ]
+    reports = await service.get_patient_reports(patient_id, current_user.id, current_user.role, db)
+    return [service.report_to_response_basic(r).model_dump() for r in reports]
 
 
 @router.get("/{report_id}", response_model=schemas.ReportResponse)

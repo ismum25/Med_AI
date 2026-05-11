@@ -13,9 +13,10 @@ from app.modules.ai.schemas import (
     CreateSessionRequest, SessionResponse, MessageResponse,
     SendMessageRequest, SessionWithMessagesResponse,
 )
-from app.modules.ai.chatbot import stream_chat_response
+from app.modules.ai.chatbot import stream_chat_response, get_chat_response
+from app.core.permissions import require_patient
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_patient)])
 
 
 @router.post("/sessions", response_model=SessionResponse, status_code=201)
@@ -149,6 +150,72 @@ async def send_message(
             await db.commit()
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+@router.post("/sessions/{session_id}/messages/once")
+async def send_message_once(
+    session_id: uuid.UUID,
+    data: SendMessageRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    result = await db.execute(
+        select(ChatSession).where(ChatSession.id == session_id, ChatSession.user_id == current_user.id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    msg_result = await db.execute(
+        select(ChatMessage)
+        .where(ChatMessage.session_id == session_id)
+        .order_by(ChatMessage.created_at.desc())
+        .limit(20)
+    )
+    history_msgs = list(reversed(msg_result.scalars().all()))
+    message_history = [
+        {"role": m.role, "content": m.content}
+        for m in history_msgs
+        if m.role in ("user", "assistant")
+    ]
+
+    user_msg = ChatMessage(session_id=session_id, role="user", content=data.content)
+    db.add(user_msg)
+    await db.commit()
+
+    user_name = "Doctor" if current_user.role == "doctor" else "Patient"
+    try:
+        if current_user.role == "doctor":
+            from app.modules.users.models import DoctorProfile
+            p = await db.execute(select(DoctorProfile).where(DoctorProfile.user_id == current_user.id))
+            profile = p.scalar_one_or_none()
+            if profile:
+                user_name = profile.full_name
+        else:
+            from app.modules.users.models import PatientProfile
+            p = await db.execute(select(PatientProfile).where(PatientProfile.user_id == current_user.id))
+            profile = p.scalar_one_or_none()
+            if profile:
+                user_name = profile.full_name
+    except Exception:
+        pass
+
+    result = await get_chat_response(
+        session_id=session_id,
+        user_message=data.content,
+        message_history=message_history,
+        user_id=current_user.id,
+        user_role=current_user.role,
+        user_name=user_name,
+        db=db,
+    )
+
+    if result.get("response"):
+        assistant_msg = ChatMessage(session_id=session_id, role="assistant", content=result["response"])
+        db.add(assistant_msg)
+        await db.commit()
+
+    return result
 
 
 @router.delete("/sessions/{session_id}")

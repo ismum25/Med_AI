@@ -83,32 +83,54 @@ async def get_report_by_id(
     return report
 
 
+def report_to_response_basic(report: MedicalReport) -> ReportResponse:
+    data = {
+        "id": report.id,
+        "patient_id": report.patient_id,
+        "uploaded_by": report.uploaded_by,
+        "title": report.title,
+        "report_type": report.report_type,
+        "report_date": report.report_date,
+        "file_name": report.file_name,
+        "file_type": report.file_type,
+        "ocr_status": report.ocr_status,
+        "ocr_confidence": report.ocr_confidence,
+        "verified_by": report.verified_by,
+        "verified_at": report.verified_at,
+        "notes": report.notes,
+        "created_at": report.created_at,
+        "extracted_data": None,
+    }
+    return ReportResponse.model_validate(data)
+
+
 async def report_to_response(
     report: MedicalReport, db: AsyncSession, requester_role: str
 ) -> ReportResponse:
     extracted: Optional[dict] = None
-    if requester_role in ("doctor", "patient"):
+    if requester_role == "doctor":
         er = await db.execute(select(ExtractedReportData).where(ExtractedReportData.report_id == report.id))
         row = er.scalar_one_or_none()
         if row:
             extracted = row.data
-    return ReportResponse(
-        id=report.id,
-        patient_id=report.patient_id,
-        uploaded_by=report.uploaded_by,
-        title=report.title,
-        report_type=report.report_type,
-        report_date=report.report_date,
-        file_name=report.file_name,
-        file_type=report.file_type,
-        ocr_status=report.ocr_status,
-        ocr_confidence=report.ocr_confidence,
-        verified_by=report.verified_by,
-        verified_at=report.verified_at,
-        notes=report.notes,
-        created_at=report.created_at,
-        extracted_data=extracted,
-    )
+    data = {
+        "id": report.id,
+        "patient_id": report.patient_id,
+        "uploaded_by": report.uploaded_by,
+        "title": report.title,
+        "report_type": report.report_type,
+        "report_date": report.report_date,
+        "file_name": report.file_name,
+        "file_type": report.file_type,
+        "ocr_status": report.ocr_status,
+        "ocr_confidence": report.ocr_confidence,
+        "verified_by": report.verified_by,
+        "verified_at": report.verified_at,
+        "notes": report.notes,
+        "created_at": report.created_at,
+        "extracted_data": extracted,
+    }
+    return ReportResponse.model_validate(data)
 
 
 async def get_report_download_url(
