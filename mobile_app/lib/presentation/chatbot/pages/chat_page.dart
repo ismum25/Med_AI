@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/network/dio_client.dart';
@@ -63,9 +65,10 @@ class _ChatPageState extends State<ChatPage> {
       }
 
       final sessionsResponse = await client.dio.get(ApiEndpoints.chatSessions);
-      final sessions = List<Map<String, dynamic>>.from(sessionsResponse.data as List)
-          .map(_ChatSessionSummary.fromJson)
-          .toList();
+      final sessions =
+          List<Map<String, dynamic>>.from(sessionsResponse.data as List)
+              .map(_ChatSessionSummary.fromJson)
+              .toList();
 
       if (!mounted) return;
       setState(() {
@@ -122,12 +125,15 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  Future<void> _loadSession(String sessionId, {bool refreshSessions = true}) async {
+  Future<void> _loadSession(String sessionId,
+      {bool refreshSessions = true}) async {
     final client = sl<DioClient>();
     try {
-      final response = await client.dio.get(ApiEndpoints.chatSession(sessionId));
+      final response =
+          await client.dio.get(ApiEndpoints.chatSession(sessionId));
       final data = response.data as Map<String, dynamic>;
-      final messages = List<Map<String, dynamic>>.from(data['messages'] as List);
+      final messages =
+          List<Map<String, dynamic>>.from(data['messages'] as List);
 
       if (!mounted) return;
       setState(() {
@@ -197,7 +203,8 @@ class _ChatPageState extends State<ChatPage> {
       final ResponseBody body = response.data;
       String buffer = '';
 
-      await for (final chunk in body.stream.cast<List<int>>().transform(utf8.decoder)) {
+      await for (final chunk
+          in body.stream.cast<List<int>>().transform(utf8.decoder)) {
         buffer += chunk;
         while (buffer.contains('\n\n')) {
           final idx = buffer.indexOf('\n\n');
@@ -206,7 +213,8 @@ class _ChatPageState extends State<ChatPage> {
           for (final line in event.split('\n')) {
             if (!line.startsWith('data: ')) continue;
             try {
-              final data = json.decode(line.substring(6)) as Map<String, dynamic>;
+              final data =
+                  json.decode(line.substring(6)) as Map<String, dynamic>;
               if (data['type'] == 'text') {
                 final content = data['content'] as String? ?? '';
                 if (content.isNotEmpty && mounted) {
@@ -320,7 +328,8 @@ class _ChatPageState extends State<ChatPage> {
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.12),
+                                  color:
+                                      AppColors.primary.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
@@ -372,7 +381,9 @@ class _ChatPageState extends State<ChatPage> {
   String _formatDate(DateTime dateTime) {
     final local = dateTime.toLocal();
     final now = DateTime.now();
-    final sameDay = local.year == now.year && local.month == now.month && local.day == now.day;
+    final sameDay = local.year == now.year &&
+        local.month == now.month &&
+        local.day == now.day;
     if (sameDay) {
       return 'Today at ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(local))}';
     }
@@ -383,7 +394,8 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     if (_bootstrapLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        body:
+            Center(child: CircularProgressIndicator(color: AppColors.primary)),
       );
     }
 
@@ -479,7 +491,8 @@ class _ChatPageState extends State<ChatPage> {
                     controller: _scrollCtrl,
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                     itemCount: _messages.length,
-                    itemBuilder: (context, i) => _MessageBubble(message: _messages[i]),
+                    itemBuilder: (context, i) =>
+                        _MessageBubble(message: _messages[i]),
                   ),
           ),
           if (_streaming)
@@ -544,7 +557,8 @@ class _MessageBubble extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
         decoration: BoxDecoration(
           color: isUser ? AppColors.primary : AppColors.surfaceContainerLowest,
           borderRadius: BorderRadius.only(
@@ -573,7 +587,8 @@ class _MessageBubble extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text('Thinking…',
-                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.onSurfaceVariant)),
+                    style: GoogleFonts.inter(
+                        fontSize: 13, color: AppColors.onSurfaceVariant)),
               ])
             : Text(
                 message.content,
@@ -610,7 +625,8 @@ class _EmptyHint extends StatelessWidget {
                 gradient: AppColors.primaryGradient,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 32),
+              child: const Icon(Icons.psychology_rounded,
+                  color: Colors.white, size: 32),
             ),
             const SizedBox(height: 16),
             Text(
@@ -627,7 +643,8 @@ class _EmptyHint extends StatelessWidget {
                   ? 'Start a new conversation about your health,\nsymptoms, or medical reports.'
                   : 'Select a previous conversation or start a new one.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 13, color: AppColors.onSurfaceVariant, height: 1.5),
+              style: GoogleFonts.inter(
+                  fontSize: 13, color: AppColors.onSurfaceVariant, height: 1.5),
             ),
           ],
         ),
@@ -643,12 +660,14 @@ class _InputBar extends StatelessWidget {
   final TextEditingController controller;
   final bool enabled;
   final VoidCallback onSend;
-  const _InputBar({required this.controller, required this.enabled, required this.onSend});
+  const _InputBar(
+      {required this.controller, required this.enabled, required this.onSend});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 10 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(
+          16, 10, 16, 10 + MediaQuery.of(context).padding.bottom),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
         boxShadow: [
@@ -672,10 +691,12 @@ class _InputBar extends StatelessWidget {
               style: GoogleFonts.inter(fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Ask about your health…',
-                hintStyle: GoogleFonts.inter(fontSize: 14, color: AppColors.outline),
+                hintStyle:
+                    GoogleFonts.inter(fontSize: 14, color: AppColors.outline),
                 filled: true,
                 fillColor: AppColors.surface,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
@@ -697,7 +718,8 @@ class _InputBar extends StatelessWidget {
               ),
               child: IconButton(
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                icon: const Icon(Icons.send_rounded,
+                    color: Colors.white, size: 20),
                 onPressed: enabled ? onSend : null,
               ),
             ),

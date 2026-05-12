@@ -93,6 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     });
                     _fetchProfile();
                   },
+                  onLogout: () => _logout(context),
                 )
               : _ProfileBody(
                   profile: _profile!,
@@ -612,7 +613,8 @@ class _ActionButton extends StatelessWidget {
 class _ErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
-  const _ErrorState({required this.message, required this.onRetry});
+  final VoidCallback? onLogout;
+  const _ErrorState({required this.message, required this.onRetry, this.onLogout});
 
   @override
   Widget build(BuildContext context) {
@@ -627,7 +629,18 @@ class _ErrorState extends StatelessWidget {
               style: GoogleFonts.inter(
                   fontSize: 14, color: AppColors.onSurfaceVariant)),
           const SizedBox(height: 16),
-          TextButton(onPressed: onRetry, child: const Text('Retry')),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(onPressed: onRetry, child: const Text('Retry')),
+              const SizedBox(width: 8),
+              if (onLogout != null)
+                TextButton(
+                  onPressed: onLogout,
+                  child: const Text('Log out'),
+                ),
+            ],
+          ),
         ],
       ),
     );
