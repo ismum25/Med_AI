@@ -13,7 +13,6 @@ class DoctorShell extends StatelessWidget {
     AppRoutes.doctorAppointments,
     AppRoutes.patients,
     AppRoutes.doctorReview,
-    AppRoutes.doctorChat,
   ];
 
   int _currentIndex(BuildContext context) {
@@ -73,11 +72,6 @@ class DoctorShell extends StatelessWidget {
                 icon: Icon(Icons.fact_check_outlined),
                 selectedIcon: Icon(Icons.fact_check_rounded),
                 label: 'Review',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.psychology_outlined),
-                selectedIcon: Icon(Icons.psychology_rounded),
-                label: 'AI Chat',
               ),
             ],
           ),

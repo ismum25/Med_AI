@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,7 +6,6 @@ import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/gradient_button.dart';
 import '../../../core/widgets/stat_card.dart';
 import '../../../injection_container.dart';
 
@@ -192,9 +190,6 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   },
                 ),
               ),
-            const SizedBox(height: 24),
-            _AiAssistantCard(onTap: () => context.go(AppRoutes.doctorChat)),
-            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -382,74 +377,6 @@ class _PendingReportCard extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               const Icon(Icons.chevron_right_rounded, color: AppColors.outline, size: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-// AI Assistant Card
-// ─────────────────────────────────────────────
-class _AiAssistantCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _AiAssistantCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.primaryContainer.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.15),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 26),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Clinical AI Assistant',
-                      style: GoogleFonts.manrope(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Ask clinical questions with patient context',
-                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 100,
-                child: GradientButton(label: 'Start', height: 38, onPressed: onTap),
-              ),
             ],
           ),
         ),
