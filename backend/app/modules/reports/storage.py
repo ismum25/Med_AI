@@ -1,6 +1,7 @@
 import io
 import uuid
 from datetime import timedelta
+
 from app.config import settings
 
 
@@ -81,3 +82,27 @@ async def download_file(object_key: str) -> bytes:
         )
         response = s3.get_object(Bucket=settings.AWS_S3_BUCKET, Key=object_key)
         return response["Body"].read()
+
+
+def delete_file(object_key: str) -> None:
+    """Delete an object from the configured storage backend."""
+    if settings.STORAGE_BACKEND == "minio":
+        client = get_minio_client()
+        # MinIO client raises if not found; ignore if missing
+        try:
+            client.remove_object(settings.MINIO_BUCKET, object_key)
+        except Exception:
+            pass
+    else:
+        import boto3
+
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION,
+        )
+        try:
+            s3.delete_object(Bucket=settings.AWS_S3_BUCKET, Key=object_key)
+        except Exception:
+            pass

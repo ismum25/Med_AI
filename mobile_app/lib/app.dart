@@ -1,34 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import 'core/constants/app_routes.dart';
 import 'core/theme/app_theme.dart';
-import 'presentation/auth/pages/login_page.dart';
-import 'presentation/auth/pages/register_page.dart';
-import 'presentation/auth/pages/welcome_page.dart';
-import 'presentation/dashboard/pages/patient_dashboard.dart';
-import 'presentation/dashboard/pages/doctor_dashboard.dart';
 import 'presentation/appointments/models/book_appointment_args.dart';
 import 'presentation/appointments/pages/appointment_list_page.dart';
 import 'presentation/appointments/pages/book_appointment_page.dart';
 import 'presentation/appointments/pages/doctor_profile_page.dart';
-import 'presentation/reports/pages/report_detail_page.dart';
-import 'presentation/reports/pages/report_list_page.dart';
-import 'presentation/reports/pages/upload_report_page.dart';
+import 'presentation/auth/pages/login_page.dart';
+import 'presentation/auth/pages/register_page.dart';
+import 'presentation/auth/pages/welcome_page.dart';
 import 'presentation/chatbot/pages/chat_page.dart';
-import 'presentation/patient/patient_shell.dart';
+import 'presentation/dashboard/pages/doctor_dashboard.dart';
+import 'presentation/dashboard/pages/patient_dashboard.dart';
 import 'presentation/doctor/doctor_shell.dart';
 import 'presentation/doctor/pages/doctor_patients_page.dart';
 import 'presentation/doctor/pages/doctor_report_review_detail_page.dart';
 import 'presentation/doctor/pages/doctor_review_queue_page.dart';
 import 'presentation/doctor/pages/doctor_schedule_page.dart';
+import 'presentation/incidents/pages/incident_detail_page.dart';
+import 'presentation/incidents/pages/incident_list_page.dart';
+import 'presentation/incidents/pages/incident_upload_page.dart';
+import 'presentation/patient/patient_shell.dart';
 import 'presentation/profile/pages/profile_page.dart';
+import 'presentation/reports/pages/report_detail_page.dart';
+import 'presentation/reports/pages/report_list_page.dart';
+import 'presentation/reports/pages/upload_report_page.dart';
 
 GoRouter _buildRouter(String initialLocation) => GoRouter(
       initialLocation: initialLocation,
       routes: [
-        GoRoute(path: AppRoutes.welcome, builder: (_, __) => const WelcomePage()),
+        GoRoute(
+            path: AppRoutes.welcome, builder: (_, __) => const WelcomePage()),
         GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginPage()),
-        GoRoute(path: AppRoutes.register, builder: (_, __) => const RegisterPage()),
+        GoRoute(
+            path: AppRoutes.register, builder: (_, __) => const RegisterPage()),
 
         // Patient shell — persistent bottom nav + header
         ShellRoute(
@@ -70,6 +76,23 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
                   builder: (_, state) {
                     final id = state.pathParameters['reportId']!;
                     return ReportDetailPage(reportId: id);
+                  },
+                ),
+              ],
+            ),
+            GoRoute(
+              path: AppRoutes.incidents,
+              builder: (_, __) => const IncidentListPage(),
+              routes: [
+                GoRoute(
+                  path: 'upload',
+                  builder: (_, __) => const IncidentUploadPage(),
+                ),
+                GoRoute(
+                  path: ':incidentId',
+                  builder: (_, state) {
+                    final id = state.pathParameters['incidentId']!;
+                    return IncidentDetailPage(incidentId: id);
                   },
                 ),
               ],

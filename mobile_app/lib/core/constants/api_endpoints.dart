@@ -33,7 +33,13 @@ class ApiEndpoints {
   static String reportById(String id) => '/reports/$id';
   static String reportDownload(String id) => '/reports/$id/download';
   static String verifyReport(String id) => '/reports/$id/verify';
-  static String patientReports(String patientId) => '/reports/patient/$patientId';
+  static String patientReports(String patientId) =>
+      '/reports/patient/$patientId';
+
+  static const String incidents = '/incidents/';
+  static const String uploadIncident = '/incidents/upload';
+  static String incidentById(String id) => '/incidents/$id';
+  static String incidentDownload(String id) => '/incidents/$id/download';
 
   static String ocrStatus(String id) => '/ocr/jobs/$id';
 

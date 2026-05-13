@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../theme/app_theme.dart';
 
 class UnderlineTextField extends StatelessWidget {
@@ -12,6 +13,7 @@ class UnderlineTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final bool enabled;
   final TextCapitalization textCapitalization;
+  final int? maxLines;
 
   const UnderlineTextField({
     super.key,
@@ -24,6 +26,7 @@ class UnderlineTextField extends StatelessWidget {
     this.keyboardType,
     this.enabled = true,
     this.textCapitalization = TextCapitalization.none,
+    this.maxLines,
   });
 
   @override
@@ -54,6 +57,7 @@ class UnderlineTextField extends StatelessWidget {
                 validator: validator,
                 keyboardType: keyboardType,
                 textCapitalization: textCapitalization,
+                maxLines: maxLines,
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,

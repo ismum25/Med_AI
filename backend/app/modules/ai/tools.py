@@ -1,8 +1,9 @@
-import uuid
 import json
-from typing import Dict, Any
-from sqlalchemy.ext.asyncio import AsyncSession
+import uuid
+from typing import Any, Dict
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 TOOLS = [
     {
@@ -50,6 +51,28 @@ TOOLS = [
             "required": ["parameter_name"],
         },
     },
+    {
+        "name": "get_incidents",
+        "description": "Get recent injury incident records for the current patient or a specific patient the caller is allowed to access.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "patient_id": {"type": "string", "description": "UUID of the patient (optional for patients)"},
+                "limit": {"type": "integer", "default": 5},
+            },
+        },
+    },
+    {
+        "name": "get_incident_analysis",
+        "description": "Get the stored AI analysis for a specific injury incident photo.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "incident_id": {"type": "string", "description": "UUID of the incident"},
+            },
+            "required": ["incident_id"],
+        },
+    },
 ]
 
 
@@ -60,9 +83,10 @@ async def execute_tool(
     caller_role: str,
     db: AsyncSession,
 ) -> str:
-    from app.modules.users.models import PatientProfile
-    from app.modules.reports.models import MedicalReport, ExtractedReportData
     from app.modules.appointments.models import Appointment
+    from app.modules.incidents.models import Incident
+    from app.modules.reports.models import ExtractedReportData, MedicalReport
+    from app.modules.users.models import PatientProfile
 
     if tool_name == "get_patient_profile":
         patient_id_raw = tool_input.get("patient_id")
@@ -195,5 +219,64 @@ async def execute_tool(
                             "flag": item.get("flag"),
                         })
         return str({"parameter": tool_input["parameter_name"], "trend": trends})
+
+    elif tool_name == "get_incidents":
+        patient_id_raw = tool_input.get("patient_id")
+        if not patient_id_raw and caller_role == "patient":
+            patient_id = caller_id
+        elif patient_id_raw:
+            patient_id = uuid.UUID(patient_id_raw)
+        else:
+            return '{"error": "patient_id is required"}'
+
+        if caller_role == "patient" and patient_id != caller_id:
+            return '{"error": "Access denied"}'
+
+        limit = tool_input.get("limit", 5)
+        query = select(Incident).where(Incident.patient_id == patient_id).order_by(Incident.created_at.desc()).limit(limit)
+        result = await db.execute(query)
+        incidents = result.scalars().all()
+        return json.dumps([
+            {
+                "incident_id": str(incident.id),
+                "title": incident.title,
+                "notes": incident.notes,
+                "analysis_status": incident.analysis_status,
+                "injury_type": incident.injury_type,
+                "severity": incident.severity,
+                "body_area": incident.body_area,
+                "summary": incident.summary,
+                "confidence": incident.confidence,
+                "created_at": incident.created_at,
+            }
+            for incident in incidents
+        ], default=str)
+
+    elif tool_name == "get_incident_analysis":
+        incident_id_raw = tool_input.get("incident_id")
+        if not incident_id_raw:
+            return '{"error": "incident_id is required"}'
+
+        incident_result = await db.execute(select(Incident).where(Incident.id == uuid.UUID(incident_id_raw)))
+        row = incident_result.scalar_one_or_none()
+        if not row:
+            return '{"error": "Incident not found"}'
+        if caller_role == "patient" and row.patient_id != caller_id:
+            return '{"error": "Access denied"}'
+
+        return json.dumps(
+            {
+                "incident_id": str(row.id),
+                "analysis_status": row.analysis_status,
+                "injury_type": row.injury_type,
+                "severity": row.severity,
+                "body_area": row.body_area,
+                "summary": row.summary,
+                "confidence": row.confidence,
+                "analysis_payload": row.analysis_payload,
+                "created_at": row.created_at,
+            },
+            default=str,
+        )
 
     return '{"error": "Unknown tool"}'
