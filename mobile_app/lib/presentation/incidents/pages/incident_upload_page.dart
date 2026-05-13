@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/underline_text_field.dart';
@@ -81,7 +82,12 @@ class _IncidentUploadPageState extends State<IncidentUploadPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Upload Incident')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: AppLayoutMetrics.scrollPadding(
+          context,
+          left: 24,
+          top: 24,
+          right: 24,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

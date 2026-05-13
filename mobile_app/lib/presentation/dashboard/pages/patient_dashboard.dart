@@ -5,8 +5,10 @@ import 'package:intl/intl.dart';
 
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/soft_panel.dart';
 import '../../../core/widgets/stat_card.dart';
 import '../../../injection_container.dart';
 
@@ -20,6 +22,7 @@ class PatientDashboard extends StatefulWidget {
 class _PatientDashboardState extends State<PatientDashboard> {
   List<Map<String, dynamic>> _appointments = [];
   List<Map<String, dynamic>> _reports = [];
+  List<Map<String, dynamic>> _incidents = [];
   bool _loading = true;
   String? _error;
 
@@ -40,12 +43,14 @@ class _PatientDashboardState extends State<PatientDashboard> {
       final results = await Future.wait([
         client.dio.get(ApiEndpoints.appointments),
         client.dio.get(ApiEndpoints.reports),
+        client.dio.get(ApiEndpoints.incidents),
       ]);
       if (mounted) {
         setState(() {
           _appointments =
               List<Map<String, dynamic>>.from(results[0].data as List);
           _reports = List<Map<String, dynamic>>.from(results[1].data as List);
+          _incidents = List<Map<String, dynamic>>.from(results[2].data as List);
           _loading = false;
         });
       }
@@ -101,121 +106,317 @@ class _PatientDashboardState extends State<PatientDashboard> {
       onRefresh: _loadData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.only(
+          bottom: AppLayoutMetrics.bottomNavReserve(context),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 24),
-            Text(_greeting(), style: Theme.of(context).textTheme.headlineLarge),
-            const SizedBox(height: 4),
-            Text(
-              "Here's your health overview",
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: AppColors.onSurfaceVariant),
+            // ── Hero greeting card ──────────────────────────────────
+            RepaintBoundary(
+              child: _HeroGreetingCard(greeting: _greeting()),
             ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: StatCard(
-                    value: upcoming.length,
-                    label: 'Upcoming',
-                    icon: Icons.calendar_month_rounded,
-                    iconColor: AppColors.primary,
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Quick actions ───────────────────────────────────
+                  _QuickActionsRow(
+                    actions: [
+                      _QuickAction(
+                        icon: Icons.add_circle_outline_rounded,
+                        label: 'Book',
+                        color: AppColors.primary,
+                        onTap: () => context.push(AppRoutes.bookAppointment),
+                      ),
+                      _QuickAction(
+                        icon: Icons.upload_file_outlined,
+                        label: 'Upload',
+                        color: AppColors.primaryContainer,
+                        onTap: () => context.push(AppRoutes.uploadReport),
+                      ),
+                      _QuickAction(
+                        icon: Icons.report_outlined,
+                        label: 'Incident',
+                        color: AppColors.accent,
+                        onTap: () => context.push(AppRoutes.uploadIncident),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: StatCard(
-                    value: _reports.length,
-                    label: 'Reports',
-                    icon: Icons.folder_rounded,
-                    iconColor: AppColors.primaryContainer,
+                  const SizedBox(height: 20),
+
+                  // ── Stat strip ──────────────────────────────────────
+                  RepaintBoundary(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: StatCard(
+                            value: upcoming.length,
+                            label: 'Upcoming',
+                            icon: Icons.calendar_month_rounded,
+                            iconColor: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: StatCard(
+                            value: _reports.length,
+                            label: 'Reports',
+                            icon: Icons.folder_rounded,
+                            iconColor: AppColors.primaryContainer,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: StatCard(
+                            value: _incidents.length,
+                            label: 'Incidents',
+                            icon: Icons.healing_rounded,
+                            iconColor: AppColors.accent,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Text('Next Appointment',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            _NextAppointmentCard(
-              appointment: nextAppt,
-              onBook: () => context.go(AppRoutes.appointments),
-              onView: () => context.go(AppRoutes.appointments),
-            ),
-            const SizedBox(height: 24),
-            Text('Quick Actions',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.search_rounded,
-                    label: 'Find a Doctor',
-                    onTap: () => context.go(AppRoutes.appointments),
+                  const SizedBox(height: 24),
+
+                  // ── Next appointment ────────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Next Appointment',
+                          style: Theme.of(context).textTheme.titleLarge),
+                      TextButton(
+                        onPressed: () => context.go(AppRoutes.appointments),
+                        child: const Text('See All'),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.add_rounded,
-                    label: 'Book Appointment',
-                    onTap: () => context.go(AppRoutes.appointments),
+                  const SizedBox(height: 10),
+                  _NextAppointmentCard(
+                    appointment: nextAppt,
+                    onBook: () => context.go(AppRoutes.appointments),
+                    onView: () => context.go(AppRoutes.appointments),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.healing_outlined,
-                    label: 'Report Injury',
-                    onTap: () => context.go(AppRoutes.incidents),
+                  const SizedBox(height: 24),
+
+                  // ── Recent reports ──────────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Recent Reports',
+                          style: Theme.of(context).textTheme.titleLarge),
+                      TextButton(
+                        onPressed: () => context.go(AppRoutes.reports),
+                        child: const Text('See All'),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.medical_information_outlined,
-                    label: 'View Incidents',
-                    onTap: () => context.go(AppRoutes.incidents),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Recent Reports',
-                    style: Theme.of(context).textTheme.titleLarge),
-                TextButton(
-                  onPressed: () => context.go(AppRoutes.reports),
-                  child: const Text('See All'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (_reports.isEmpty)
-              _EmptyBanner(
-                icon: Icons.folder_open_outlined,
-                message: 'No reports yet',
-                action: 'Upload',
-                onAction: () => context.push(AppRoutes.uploadReport),
-              )
-            else
-              _RecentReportsRow(
-                reports: _reports.take(3).toList(),
-                onTap: () => context.go(AppRoutes.reports),
+                  const SizedBox(height: 10),
+                  if (_reports.isEmpty)
+                    _EmptyBanner(
+                      icon: Icons.folder_open_outlined,
+                      message: 'No reports yet',
+                      action: 'Upload',
+                      onAction: () => context.push(AppRoutes.uploadReport),
+                    )
+                  else
+                    _RecentReportsRow(
+                      reports: _reports.take(3).toList(),
+                      onTap: () => context.go(AppRoutes.reports),
+                    ),
+                ],
               ),
-            const SizedBox(height: 32),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Hero Greeting Card
+// ─────────────────────────────────────────────
+class _HeroGreetingCard extends StatelessWidget {
+  final String greeting;
+
+  static final _greetStyle = GoogleFonts.manrope(
+    fontSize: 26,
+    fontWeight: FontWeight.w700,
+    color: Colors.white,
+    height: 1.2,
+  );
+
+  static final _subStyle = GoogleFonts.inter(
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    color: Colors.white70,
+    height: 1.4,
+  );
+
+  const _HeroGreetingCard({required this.greeting});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 22),
+      decoration: const BoxDecoration(
+        gradient: AppColors.heroGradient,
+      ),
+      child: Stack(
+        children: [
+          // Decorative circle
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 20,
+            bottom: -30,
+            child: Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.06),
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(greeting, style: _greetStyle),
+              const SizedBox(height: 4),
+              Text(
+                DateFormat('EEEE, MMMM d').format(DateTime.now()),
+                style: _subStyle,
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.28),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.favorite_rounded,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      "Your health overview",
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Quick Actions Row
+// ─────────────────────────────────────────────
+class _QuickAction {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+}
+
+class _QuickActionsRow extends StatelessWidget {
+  final List<_QuickAction> actions;
+  const _QuickActionsRow({required this.actions});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: actions.map((a) {
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: a == actions.last ? 0 : 10,
+            ),
+            child: _QuickActionTile(action: a),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _QuickActionTile extends StatelessWidget {
+  final _QuickAction action;
+  const _QuickActionTile({required this.action});
+
+  static final _labelStyle = GoogleFonts.inter(
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: action.color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: action.onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: action.color.withValues(alpha: 0.16),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(action.icon, size: 22, color: action.color),
+              const SizedBox(height: 6),
+              Text(
+                action.label,
+                style: _labelStyle.copyWith(color: action.color),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -239,24 +440,13 @@ class _NextAppointmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (appointment == null) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.onSurface.withValues(alpha: 0.06),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+      return SoftPanel(
+        padding: const EdgeInsets.all(18),
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: AppColors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(12),
@@ -264,10 +454,10 @@ class _NextAppointmentCard extends StatelessWidget {
               child: const Icon(
                 Icons.calendar_today_outlined,
                 color: AppColors.onSurfaceVariant,
-                size: 22,
+                size: 20,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,30 +491,15 @@ class _NextAppointmentCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onView,
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.primary, AppColors.primaryContainer],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.28),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
+      child: SoftPanel(
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                gradient: AppColors.primaryGradient,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Column(
@@ -340,10 +515,10 @@ class _NextAppointmentCard extends StatelessWidget {
                   ),
                   Text(
                     DateFormat('MMM').format(at).toUpperCase(),
-                    style: GoogleFonts.inter(
+                    style: const TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: Colors.white70,
                     ),
                   ),
                 ],
@@ -359,7 +534,7 @@ class _NextAppointmentCard extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -369,7 +544,7 @@ class _NextAppointmentCard extends StatelessWidget {
                     DateFormat('hh:mm a, EEEE').format(at),
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: AppColors.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -378,7 +553,7 @@ class _NextAppointmentCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: AppColors.primary.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
@@ -386,75 +561,11 @@ class _NextAppointmentCard extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.primary,
                 ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-// Quick Action Card
-// ─────────────────────────────────────────────
-class _QuickActionCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _QuickActionCard({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.22),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: Colors.white, size: 22),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: GoogleFonts.manrope(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  height: 1.3,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -469,6 +580,12 @@ class _RecentReportsRow extends StatelessWidget {
   final VoidCallback onTap;
 
   const _RecentReportsRow({required this.reports, required this.onTap});
+
+  static final _titleStyle = GoogleFonts.manrope(
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    color: AppColors.onSurface,
+  );
 
   IconData _icon(String? type) {
     switch (type) {
@@ -501,11 +618,11 @@ class _RecentReportsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 110,
+      height: 108,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: reports.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, i) {
           final r = reports[i];
           final status = r['ocr_status'] as String? ?? 'pending';
@@ -516,39 +633,24 @@ class _RecentReportsRow extends StatelessWidget {
               'Report';
           return GestureDetector(
             onTap: onTap,
-            child: Container(
-              width: 140,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.onSurface.withValues(alpha: 0.06),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+            child: SoftPanel(
+              width: 130,
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(_icon(type), color: AppColors.primary, size: 22),
+                  Icon(_icon(type), color: AppColors.primary, size: 20),
                   const SizedBox(height: 8),
                   Text(
                     title,
-                    style: GoogleFonts.manrope(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.onSurface,
-                    ),
+                    style: _titleStyle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
                       color: isVerified
                           ? AppColors.primary.withValues(alpha: 0.10)
@@ -594,22 +696,11 @@ class _EmptyBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.onSurface.withValues(alpha: 0.05),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return SoftPanel(
+      padding: const EdgeInsets.all(18),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.onSurfaceVariant, size: 26),
+          Icon(icon, color: AppColors.onSurfaceVariant, size: 24),
           const SizedBox(width: 14),
           Expanded(
             child: Text(

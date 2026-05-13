@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/constants/app_routes.dart';
@@ -26,24 +27,37 @@ import 'presentation/profile/pages/profile_page.dart';
 import 'presentation/reports/pages/report_detail_page.dart';
 import 'presentation/reports/pages/report_list_page.dart';
 import 'presentation/reports/pages/upload_report_page.dart';
+import 'presentation/splash/splash_page.dart';
 
-GoRouter _buildRouter(String initialLocation) => GoRouter(
-      initialLocation: initialLocation,
-      routes: [
-        GoRoute(
-            path: AppRoutes.welcome, builder: (_, __) => const WelcomePage()),
-        GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginPage()),
-        GoRoute(
-            path: AppRoutes.register, builder: (_, __) => const RegisterPage()),
+final _router = GoRouter(
+  initialLocation: AppRoutes.splash,
+  routes: [
+    GoRoute(
+        path: AppRoutes.splash, builder: (_, __) => const SplashPage()),
+    GoRoute(
+        path: AppRoutes.welcome, builder: (_, __) => const WelcomePage()),
+    GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginPage()),
+    GoRoute(
+        path: AppRoutes.register, builder: (_, __) => const RegisterPage()),
 
-        // Patient shell — persistent bottom nav + header
-        ShellRoute(
-          builder: (_, __, child) => PatientShell(child: child),
+    StatefulShellRoute.indexedStack(
+      builder: (_, __, navigationShell) =>
+          PatientShell(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
           routes: [
             GoRoute(
               path: AppRoutes.patientDashboard,
               builder: (_, __) => const PatientDashboard(),
             ),
+            GoRoute(
+              path: AppRoutes.patientProfile,
+              builder: (_, __) => const ProfilePage(role: 'patient'),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
             GoRoute(
               path: AppRoutes.appointments,
               builder: (_, __) => const AppointmentListPage(),
@@ -63,6 +77,10 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
                 ),
               ],
             ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
             GoRoute(
               path: AppRoutes.reports,
               builder: (_, __) => const ReportListPage(),
@@ -80,6 +98,10 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
                 ),
               ],
             ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
             GoRoute(
               path: AppRoutes.incidents,
               builder: (_, __) => const IncidentListPage(),
@@ -97,33 +119,57 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
                 ),
               ],
             ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
             GoRoute(
               path: AppRoutes.chat,
               builder: (_, __) => const ChatPage(),
             ),
-            GoRoute(
-              path: AppRoutes.patientProfile,
-              builder: (_, __) => const ProfilePage(role: 'patient'),
-            ),
           ],
         ),
+      ],
+    ),
 
-        // Doctor shell — persistent bottom nav + header
-        ShellRoute(
-          builder: (_, __, child) => DoctorShell(child: child),
+    StatefulShellRoute.indexedStack(
+      builder: (_, __, navigationShell) =>
+          DoctorShell(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
           routes: [
             GoRoute(
               path: AppRoutes.doctorDashboard,
               builder: (_, __) => const DoctorDashboard(),
             ),
             GoRoute(
+              path: AppRoutes.doctorChat,
+              builder: (_, __) => const ChatPage(),
+            ),
+            GoRoute(
+              path: AppRoutes.doctorProfile,
+              builder: (_, __) => const ProfilePage(role: 'doctor'),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
               path: AppRoutes.doctorAppointments,
               builder: (_, __) => const DoctorSchedulePage(),
             ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
             GoRoute(
               path: AppRoutes.patients,
               builder: (_, __) => const DoctorPatientsPage(),
             ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
             GoRoute(
               path: AppRoutes.doctorReview,
               builder: (_, __) => const DoctorReviewQueuePage(),
@@ -137,37 +183,32 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
                 ),
               ],
             ),
-            GoRoute(
-              path: AppRoutes.doctorChat,
-              builder: (_, __) => const ChatPage(),
-            ),
-            GoRoute(
-              path: AppRoutes.doctorProfile,
-              builder: (_, __) => const ProfilePage(role: 'doctor'),
-            ),
           ],
         ),
       ],
-    );
+    ),
+  ],
+);
 
-class HealthcareApp extends StatefulWidget {
-  final String initialRoute;
-  const HealthcareApp({super.key, required this.initialRoute});
-
-  @override
-  State<HealthcareApp> createState() => _HealthcareAppState();
-}
-
-class _HealthcareAppState extends State<HealthcareApp> {
-  late final GoRouter _router = _buildRouter(widget.initialRoute);
+class HealthcareApp extends StatelessWidget {
+  const HealthcareApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Health Care',
-      theme: AppTheme.lightTheme,
-      routerConfig: _router,
-      debugShowCheckedModeBanner: false,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: AppColors.surface,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+      child: MaterialApp.router(
+        title: 'Health Care',
+        theme: AppTheme.lightTheme,
+        routerConfig: _router,
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }

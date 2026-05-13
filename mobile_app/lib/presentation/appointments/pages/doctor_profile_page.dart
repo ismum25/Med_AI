@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/app_routes.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/api_error_message.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/doctor.dart';
@@ -81,10 +82,9 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Doctor profile'),
-        backgroundColor: AppColors.surfaceContainerLowest,
       ),
       body: _loading
           ? const Center(
@@ -109,7 +109,12 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
               : _doctor == null
                   ? const SizedBox.shrink()
                   : SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
+                      padding: AppLayoutMetrics.scrollPadding(
+                        context,
+                        left: 24,
+                        top: 24,
+                        right: 24,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [

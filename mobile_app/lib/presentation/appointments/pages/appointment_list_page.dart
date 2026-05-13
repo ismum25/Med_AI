@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_routes.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/appointment.dart';
 import '../../../domain/entities/doctor.dart';
@@ -122,18 +123,20 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
 
   Widget _buildScaffold(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Appointments'),
-        backgroundColor: AppColors.surfaceContainerLowest,
       ),
       floatingActionButton: widget.showBookFab && widget.showFindDoctorSection
-          ? FloatingActionButton.extended(
-              onPressed: _scrollToFindDoctor,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Book'),
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: FloatingActionButton.extended(
+                onPressed: _scrollToFindDoctor,
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Book'),
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
             )
           : null,
       body: BlocBuilder<AppointmentBloc, AppointmentState>(
@@ -160,6 +163,11 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
                     ),
                     SliverToBoxAdapter(
                       child: _findDoctorSection(context, docState),
+                    ),
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: AppLayoutMetrics.bottomNavReserve(context),
+                      ),
                     ),
                   ],
                 ),
@@ -211,7 +219,7 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
       }
       return ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: AppLayoutMetrics.scrollPadding(context, left: 16, right: 16),
         itemCount: sorted.length,
         separatorBuilder: (_, __) => const SizedBox(height: 8),
         itemBuilder: (context, index) =>
@@ -334,7 +342,7 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
 
     return Padding(
       key: _findSectionKey,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

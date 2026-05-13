@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../injection_container.dart';
@@ -63,7 +64,7 @@ class _DoctorReviewQueuePageState extends State<DoctorReviewQueuePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Review'),
         actions: [
@@ -125,7 +126,7 @@ class _DoctorReviewQueuePageState extends State<DoctorReviewQueuePage> {
                           ],
                         )
                       : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                          padding: AppLayoutMetrics.scrollPadding(context),
                           itemCount: _reports.length,
                           separatorBuilder: (_, __) => const SizedBox(height: 10),
                           itemBuilder: (context, i) {

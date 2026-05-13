@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/widgets/underline_text_field.dart';
 import '../../../injection_container.dart';
 import '../bloc/report_bloc.dart';
@@ -50,8 +51,13 @@ class _UploadReportPageState extends State<UploadReportPage> {
             }
           },
           builder: (context, state) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
+            return SingleChildScrollView(
+              padding: AppLayoutMetrics.scrollPadding(
+                context,
+                left: 24,
+                top: 24,
+                right: 24,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

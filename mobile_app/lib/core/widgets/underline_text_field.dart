@@ -57,7 +57,7 @@ class UnderlineTextField extends StatelessWidget {
                 validator: validator,
                 keyboardType: keyboardType,
                 textCapitalization: textCapitalization,
-                maxLines: maxLines,
+                maxLines: obscure ? 1 : maxLines,
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
