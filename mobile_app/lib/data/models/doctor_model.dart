@@ -10,6 +10,8 @@ class DoctorListItemModel extends DoctorListItemEntity {
     super.consultationFee,
     required super.rating,
     super.yearsExperience,
+    super.sourceProfileUrl,
+    super.profileImageUrl,
   });
 
   factory DoctorListItemModel.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,8 @@ class DoctorListItemModel extends DoctorListItemEntity {
       consultationFee: (json['consultation_fee'] as num?)?.toDouble(),
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       yearsExperience: json['years_experience'] as int?,
+      sourceProfileUrl: json['source_profile_url'] as String?,
+      profileImageUrl: json['profile_image_url'] as String?,
     );
   }
 }
@@ -40,6 +44,8 @@ class DoctorProfileModel extends DoctorProfileEntity {
     super.availabilityTimezone,
     required super.rating,
     super.yearsExperience,
+    super.sourceProfileUrl,
+    super.profileImageUrl,
   });
 
   factory DoctorProfileModel.fromJson(Map<String, dynamic> json) {
@@ -56,6 +62,8 @@ class DoctorProfileModel extends DoctorProfileEntity {
       availabilityTimezone: json['availability_timezone'] as String?,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       yearsExperience: json['years_experience'] as int?,
+      sourceProfileUrl: json['source_profile_url'] as String?,
+      profileImageUrl: json['profile_image_url'] as String?,
     );
   }
 }

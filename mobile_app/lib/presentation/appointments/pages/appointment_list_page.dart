@@ -529,13 +529,19 @@ class _DoctorCard extends StatelessWidget {
                   radius: 28,
                   backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                   foregroundColor: AppColors.primary,
-                  child: Text(
-                    initials,
-                    style: GoogleFonts.manrope(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
+                  backgroundImage:
+                      (doctor.profileImageUrl ?? '').isNotEmpty
+                          ? NetworkImage(doctor.profileImageUrl!)
+                          : null,
+                  child: (doctor.profileImageUrl ?? '').isEmpty
+                      ? Text(
+                          initials,
+                          style: GoogleFonts.manrope(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(

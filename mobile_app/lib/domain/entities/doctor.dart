@@ -7,6 +7,8 @@ class DoctorListItemEntity {
   final double? consultationFee;
   final double rating;
   final int? yearsExperience;
+  final String? sourceProfileUrl;
+  final String? profileImageUrl;
 
   const DoctorListItemEntity({
     required this.profileId,
@@ -17,6 +19,8 @@ class DoctorListItemEntity {
     this.consultationFee,
     required this.rating,
     this.yearsExperience,
+    this.sourceProfileUrl,
+    this.profileImageUrl,
   });
 }
 
@@ -33,6 +37,8 @@ class DoctorProfileEntity {
   final String? availabilityTimezone;
   final double rating;
   final int? yearsExperience;
+  final String? sourceProfileUrl;
+  final String? profileImageUrl;
 
   const DoctorProfileEntity({
     required this.id,
@@ -47,5 +53,7 @@ class DoctorProfileEntity {
     this.availabilityTimezone,
     required this.rating,
     this.yearsExperience,
+    this.sourceProfileUrl,
+    this.profileImageUrl,
   });
 }

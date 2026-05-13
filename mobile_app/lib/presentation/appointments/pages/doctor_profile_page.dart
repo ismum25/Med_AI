@@ -120,13 +120,19 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                                 backgroundColor:
                                     AppColors.primary.withValues(alpha: 0.12),
                                 foregroundColor: AppColors.primary,
-                                child: Text(
-                                  _initials(_doctor!.fullName),
-                                  style: GoogleFonts.manrope(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                                backgroundImage:
+                                    (_doctor!.profileImageUrl ?? '').isNotEmpty
+                                        ? NetworkImage(_doctor!.profileImageUrl!)
+                                        : null,
+                                child: (_doctor!.profileImageUrl ?? '').isEmpty
+                                    ? Text(
+                                        _initials(_doctor!.fullName),
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      )
+                                    : null,
                               ),
                               const SizedBox(width: 20),
                               Expanded(
