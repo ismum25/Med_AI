@@ -26,26 +26,22 @@ class PatientShell extends StatelessWidget {
     return 0;
   }
 
-  bool _isMainTabPage(BuildContext context) {
+  bool _showHeader(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
-    // Check if location is exactly a main tab (no sub-routes like /incidents/123 or /incidents/upload)
-    for (final tab in _tabs) {
-      if (location == tab) return true;
-    }
-    return false;
+    return location == AppRoutes.patientDashboard;
   }
 
   @override
   Widget build(BuildContext context) {
     final idx = _currentIndex(context);
-    final isMainPage = _isMainTabPage(context);
+    final showHeader = _showHeader(context);
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            if (isMainPage) const AppHeader(role: 'patient'),
+            if (showHeader) const AppHeader(role: 'patient'),
             Expanded(
               child: ColoredBox(
                 color: AppColors.surface,
