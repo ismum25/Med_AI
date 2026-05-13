@@ -58,9 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String get _displayName {
     final name = (_profile?['full_name'] as String?) ?? '';
     if (name.isEmpty) return widget.role == 'doctor' ? 'Doctor' : 'User';
-    return widget.role == 'doctor'
-        ? 'Dr. ${name.split(' ').first}'
-        : name;
+    return widget.role == 'doctor' ? 'Dr. ${name.split(' ').first}' : name;
   }
 
   String get _roleLabel {
@@ -93,6 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     });
                     _fetchProfile();
                   },
+                  onLogout: () => _logout(context),
                 )
               : _ProfileBody(
                   profile: _profile!,
@@ -135,131 +134,131 @@ class _ProfileBody extends StatelessWidget {
       color: AppColors.primary,
       onRefresh: onRefresh,
       child: SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Column(
-        children: [
-          // Hero banner
-          _HeroBanner(
-              initials: initials,
-              displayName: displayName,
-              roleLabel: roleLabel),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Info section
-                _SectionLabel('Personal Info'),
-                const SizedBox(height: 10),
-                _InfoCard(children: [
-                  _InfoRow(
-                    icon: Icons.email_outlined,
-                    label: 'Email',
-                    value: (profile['email'] as String?) ?? '—',
-                  ),
-                  if (role == 'patient') ...[
-                    _InfoRow(
-                      icon: Icons.cake_outlined,
-                      label: 'Date of Birth',
-                      value: _fmt(profile['date_of_birth']),
-                    ),
-                    _InfoRow(
-                      icon: Icons.bloodtype_outlined,
-                      label: 'Blood Type',
-                      value: _fmt(profile['blood_type']),
-                    ),
-                    _InfoRow(
-                      icon: Icons.warning_amber_outlined,
-                      label: 'Allergies',
-                      value: _fmt(profile['allergies']),
-                      isLast: true,
-                    ),
-                  ],
-                  if (role == 'doctor') ...[
-                    _InfoRow(
-                      icon: Icons.biotech_outlined,
-                      label: 'Specialization',
-                      value: _fmt(profile['specialization']),
-                    ),
-                    _InfoRow(
-                      icon: Icons.badge_outlined,
-                      label: 'License Number',
-                      value: _fmt(profile['license_number']),
-                      isLast: true,
-                    ),
-                  ],
-                ]),
-
-                // Doctor-only additional section
-                if (role == 'doctor' &&
-                    ((profile['bio'] as String?)?.isNotEmpty ?? false)) ...[
-                  const SizedBox(height: 20),
-                  _SectionLabel('About'),
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            // Hero banner
+            _HeroBanner(
+                initials: initials,
+                displayName: displayName,
+                roleLabel: roleLabel),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Info section
+                  _SectionLabel('Personal Info'),
                   const SizedBox(height: 10),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.onSurface.withValues(alpha: 0.05),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                  _InfoCard(children: [
+                    _InfoRow(
+                      icon: Icons.email_outlined,
+                      label: 'Email',
+                      value: (profile['email'] as String?) ?? '—',
                     ),
-                    child: Text(
-                      profile['bio'] as String,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: AppColors.onSurfaceVariant,
-                        height: 1.6,
+                    if (role == 'patient') ...[
+                      _InfoRow(
+                        icon: Icons.cake_outlined,
+                        label: 'Date of Birth',
+                        value: _fmt(profile['date_of_birth']),
+                      ),
+                      _InfoRow(
+                        icon: Icons.bloodtype_outlined,
+                        label: 'Blood Type',
+                        value: _fmt(profile['blood_type']),
+                      ),
+                      _InfoRow(
+                        icon: Icons.warning_amber_outlined,
+                        label: 'Allergies',
+                        value: _fmt(profile['allergies']),
+                        isLast: true,
+                      ),
+                    ],
+                    if (role == 'doctor') ...[
+                      _InfoRow(
+                        icon: Icons.biotech_outlined,
+                        label: 'Specialization',
+                        value: _fmt(profile['specialization']),
+                      ),
+                      _InfoRow(
+                        icon: Icons.badge_outlined,
+                        label: 'License Number',
+                        value: _fmt(profile['license_number']),
+                        isLast: true,
+                      ),
+                    ],
+                  ]),
+
+                  // Doctor-only additional section
+                  if (role == 'doctor' &&
+                      ((profile['bio'] as String?)?.isNotEmpty ?? false)) ...[
+                    const SizedBox(height: 20),
+                    _SectionLabel('About'),
+                    const SizedBox(height: 10),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.onSurface.withValues(alpha: 0.05),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        profile['bio'] as String,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: AppColors.onSurfaceVariant,
+                          height: 1.6,
+                        ),
                       ),
                     ),
+                  ],
+
+                  const SizedBox(height: 32),
+
+                  // Divider
+                  Container(
+                    height: 1,
+                    color: AppColors.surfaceContainer,
                   ),
+                  const SizedBox(height: 24),
+
+                  // Switch Account
+                  _ActionButton(
+                    icon: Icons.swap_horiz_rounded,
+                    label: 'Switch Account',
+                    sublabel: 'Log in as a different user',
+                    iconBg: AppColors.surfaceContainerLow,
+                    iconColor: AppColors.onSurfaceVariant,
+                    textColor: AppColors.onSurface,
+                    onTap: onLogout, // same flow — clears token, goes to login
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Log Out
+                  _ActionButton(
+                    icon: Icons.logout_rounded,
+                    label: 'Log Out',
+                    sublabel: 'Sign out of your account',
+                    iconBg: AppColors.error.withValues(alpha: 0.10),
+                    iconColor: AppColors.error,
+                    textColor: AppColors.error,
+                    onTap: onLogout,
+                    showConfirm: true,
+                  ),
+                  const SizedBox(height: 40),
                 ],
-
-                const SizedBox(height: 32),
-
-                // Divider
-                Container(
-                  height: 1,
-                  color: AppColors.surfaceContainer,
-                ),
-                const SizedBox(height: 24),
-
-                // Switch Account
-                _ActionButton(
-                  icon: Icons.swap_horiz_rounded,
-                  label: 'Switch Account',
-                  sublabel: 'Log in as a different user',
-                  iconBg: AppColors.surfaceContainerLow,
-                  iconColor: AppColors.onSurfaceVariant,
-                  textColor: AppColors.onSurface,
-                  onTap: onLogout, // same flow — clears token, goes to login
-                ),
-                const SizedBox(height: 12),
-
-                // Log Out
-                _ActionButton(
-                  icon: Icons.logout_rounded,
-                  label: 'Log Out',
-                  sublabel: 'Sign out of your account',
-                  iconBg: AppColors.error.withValues(alpha: 0.10),
-                  iconColor: AppColors.error,
-                  textColor: AppColors.error,
-                  onTap: onLogout,
-                  showConfirm: true,
-                ),
-                const SizedBox(height: 40),
-              ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -612,7 +611,9 @@ class _ActionButton extends StatelessWidget {
 class _ErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
-  const _ErrorState({required this.message, required this.onRetry});
+  final VoidCallback? onLogout;
+  const _ErrorState(
+      {required this.message, required this.onRetry, this.onLogout});
 
   @override
   Widget build(BuildContext context) {
@@ -627,7 +628,18 @@ class _ErrorState extends StatelessWidget {
               style: GoogleFonts.inter(
                   fontSize: 14, color: AppColors.onSurfaceVariant)),
           const SizedBox(height: 16),
-          TextButton(onPressed: onRetry, child: const Text('Retry')),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(onPressed: onRetry, child: const Text('Retry')),
+              const SizedBox(width: 8),
+              if (onLogout != null)
+                TextButton(
+                  onPressed: onLogout,
+                  child: const Text('Log out'),
+                ),
+            ],
+          ),
         ],
       ),
     );

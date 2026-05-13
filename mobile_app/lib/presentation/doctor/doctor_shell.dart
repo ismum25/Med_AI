@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../core/constants/app_routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_header.dart';
@@ -13,7 +14,6 @@ class DoctorShell extends StatelessWidget {
     AppRoutes.doctorAppointments,
     AppRoutes.patients,
     AppRoutes.doctorReview,
-    AppRoutes.doctorChat,
   ];
 
   int _currentIndex(BuildContext context) {
@@ -73,11 +73,6 @@ class DoctorShell extends StatelessWidget {
                 icon: Icon(Icons.fact_check_outlined),
                 selectedIcon: Icon(Icons.fact_check_rounded),
                 label: 'Review',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.psychology_outlined),
-                selectedIcon: Icon(Icons.psychology_rounded),
-                label: 'AI Chat',
               ),
             ],
           ),

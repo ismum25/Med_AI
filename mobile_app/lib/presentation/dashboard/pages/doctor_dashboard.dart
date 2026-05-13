@@ -1,13 +1,12 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/gradient_button.dart';
 import '../../../core/widgets/stat_card.dart';
 import '../../../injection_container.dart';
 
@@ -31,7 +30,11 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
   }
 
   Future<void> _loadData() async {
-    if (mounted) setState(() { _loading = true; _error = null; });
+    if (mounted)
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
     try {
       final client = sl<DioClient>();
       final results = await Future.wait([
@@ -40,13 +43,19 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
       ]);
       if (mounted) {
         setState(() {
-          _appointments = List<Map<String, dynamic>>.from(results[0].data as List);
-          _pendingReports = List<Map<String, dynamic>>.from(results[1].data as List);
+          _appointments =
+              List<Map<String, dynamic>>.from(results[0].data as List);
+          _pendingReports =
+              List<Map<String, dynamic>>.from(results[1].data as List);
           _loading = false;
         });
       }
     } catch (_) {
-      if (mounted) setState(() { _error = 'Failed to load data'; _loading = false; });
+      if (mounted)
+        setState(() {
+          _error = 'Failed to load data';
+          _loading = false;
+        });
     }
   }
 
@@ -72,12 +81,14 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.primary));
     }
     if (_error != null) {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(_error!, style: GoogleFonts.inter(color: AppColors.onSurfaceVariant)),
+          Text(_error!,
+              style: GoogleFonts.inter(color: AppColors.onSurfaceVariant)),
           const SizedBox(height: 12),
           TextButton(onPressed: _loadData, child: const Text('Retry')),
         ]),
@@ -128,7 +139,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
               ],
             ),
             const SizedBox(height: 24),
-            Text("Today's Schedule", style: Theme.of(context).textTheme.titleLarge),
+            Text("Today's Schedule",
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             if (todayAppts.isEmpty)
               const _EmptyState(
@@ -140,7 +152,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                 children: List.generate(todayAppts.length, (i) {
                   final a = todayAppts[i];
                   return Padding(
-                    padding: EdgeInsets.only(bottom: i < todayAppts.length - 1 ? 8 : 0),
+                    padding: EdgeInsets.only(
+                        bottom: i < todayAppts.length - 1 ? 8 : 0),
                     child: _ScheduleCard(
                       appointment: a,
                       onTap: () => context.go(AppRoutes.doctorAppointments),
@@ -180,8 +193,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                     final n =
                         _pendingReports.length > 3 ? 3 : _pendingReports.length;
                     return Padding(
-                      padding:
-                          EdgeInsets.only(bottom: i < n - 1 ? 8 : 0),
+                      padding: EdgeInsets.only(bottom: i < n - 1 ? 8 : 0),
                       child: _PendingReportCard(
                         report: r,
                         onTap: () => context.push(
@@ -192,9 +204,6 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   },
                 ),
               ),
-            const SizedBox(height: 24),
-            _AiAssistantCard(onTap: () => context.go(AppRoutes.doctorChat)),
-            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -267,7 +276,8 @@ class _ScheduleCard extends StatelessWidget {
                   ),
                   Text(
                     '${appointment['duration_mins'] ?? 30} min',
-                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.onSurfaceVariant),
+                    style: GoogleFonts.inter(
+                        fontSize: 12, color: AppColors.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -320,7 +330,8 @@ class _PendingReportCard extends StatelessWidget {
         (report['file_name'] as String?) ??
         'Medical Report';
     final type = (report['report_type'] as String?) ?? 'Report';
-    final createdAt = report['created_at'] as String? ?? DateTime.now().toIso8601String();
+    final createdAt =
+        report['created_at'] as String? ?? DateTime.now().toIso8601String();
     final displayType = type.replaceAll('_', ' ');
 
     return Material(
@@ -350,7 +361,8 @@ class _PendingReportCard extends StatelessWidget {
                   color: AppColors.tertiary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.assignment_outlined, color: AppColors.tertiary, size: 20),
+                child: const Icon(Icons.assignment_outlined,
+                    color: AppColors.tertiary, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -370,86 +382,22 @@ class _PendingReportCard extends StatelessWidget {
                     Text(
                       displayType.isEmpty
                           ? ''
-                          : displayType[0].toUpperCase() + displayType.substring(1),
-                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.onSurfaceVariant),
+                          : displayType[0].toUpperCase() +
+                              displayType.substring(1),
+                      style: GoogleFonts.inter(
+                          fontSize: 12, color: AppColors.onSurfaceVariant),
                     ),
                   ],
                 ),
               ),
               Text(
                 _timeAgo(createdAt),
-                style: GoogleFonts.inter(fontSize: 11, color: AppColors.outline),
+                style:
+                    GoogleFonts.inter(fontSize: 11, color: AppColors.outline),
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.outline, size: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-// AI Assistant Card
-// ─────────────────────────────────────────────
-class _AiAssistantCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _AiAssistantCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.primaryContainer.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.15),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 26),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Clinical AI Assistant',
-                      style: GoogleFonts.manrope(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Ask clinical questions with patient context',
-                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 100,
-                child: GradientButton(label: 'Start', height: 38, onPressed: onTap),
-              ),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.outline, size: 20),
             ],
           ),
         ),
@@ -480,7 +428,8 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(width: 12),
           Text(
             message,
-            style: GoogleFonts.inter(fontSize: 14, color: AppColors.onSurfaceVariant),
+            style: GoogleFonts.inter(
+                fontSize: 14, color: AppColors.onSurfaceVariant),
           ),
         ],
       ),

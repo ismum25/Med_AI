@@ -1,8 +1,19 @@
 import uuid
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey, JSON, Numeric, Integer, func
+
+from app.database.base import Base
+from sqlalchemy import (
+    JSON,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from app.database.base import Base
 
 
 class DoctorProfile(Base):
@@ -15,6 +26,8 @@ class DoctorProfile(Base):
     license_number = Column(String(100), unique=True, nullable=False)
     hospital = Column(String(255))
     bio = Column(Text)
+    source_profile_url = Column(String(512), unique=True, nullable=True)
+    profile_image_url = Column(Text)
     consultation_fee = Column(Numeric(10, 2))
     available_slots = Column(JSON, default=dict)
     # IANA zone used with available_slots for booking validation (e.g. Asia/Dhaka)
