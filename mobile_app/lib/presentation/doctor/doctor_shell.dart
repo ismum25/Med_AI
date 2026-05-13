@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_header.dart';
+import '../../core/widgets/floating_glass_nav_bar.dart';
 
 class DoctorShell extends StatelessWidget {
   final Widget child;
@@ -44,49 +45,40 @@ class DoctorShell extends StatelessWidget {
         child: Column(
           children: [
             if (isMainPage) const AppHeader(role: 'doctor'),
-            Expanded(child: child),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLowest,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.onSurface.withValues(alpha: 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
+            Expanded(
+              child: ColoredBox(
+                color: AppColors.surface,
+                child: child,
+              ),
             ),
           ],
         ),
-        child: SafeArea(
-          child: NavigationBar(
-            selectedIndex: idx,
-            onDestinationSelected: (i) => context.go(_tabs[i]),
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_rounded),
-                label: 'Home',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.calendar_month_outlined),
-                selectedIcon: Icon(Icons.calendar_month_rounded),
-                label: 'Schedule',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.people_alt_outlined),
-                selectedIcon: Icon(Icons.people_alt_rounded),
-                label: 'Patients',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.fact_check_outlined),
-                selectedIcon: Icon(Icons.fact_check_rounded),
-                label: 'Review',
-              ),
-            ],
+      ),
+      bottomNavigationBar: FloatingGlassNavBar(
+        selectedIndex: idx,
+        onDestinationSelected: (i) => context.go(_tabs[i]),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Home',
           ),
-        ),
+          NavigationDestination(
+            icon: Icon(Icons.calendar_month_outlined),
+            selectedIcon: Icon(Icons.calendar_month_rounded),
+            label: 'Schedule',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.people_alt_outlined),
+            selectedIcon: Icon(Icons.people_alt_rounded),
+            label: 'Patients',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.fact_check_outlined),
+            selectedIcon: Icon(Icons.fact_check_rounded),
+            label: 'Review',
+          ),
+        ],
       ),
     );
   }

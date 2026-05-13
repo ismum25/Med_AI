@@ -84,7 +84,6 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
       backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('Doctor profile'),
-        backgroundColor: AppColors.surfaceContainerLowest,
       ),
       body: _loading
           ? const Center(

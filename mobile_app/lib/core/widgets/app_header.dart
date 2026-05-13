@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -61,127 +63,168 @@ class _AppHeaderState extends State<AppHeader> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.surface,
-      padding: const EdgeInsets.fromLTRB(20, 8, 16, 8),
-      child: Row(
-        children: [
-          // Avatar + name — tappable, navigates to profile
-          Expanded(
-            child: InkWell(
-              onTap: () => context.go(
-                widget.role == 'doctor'
-                    ? AppRoutes.doctorProfile
-                    : AppRoutes.patientProfile,
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(
+        bottom: Radius.circular(20),
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.surfaceContainerLowest.withValues(alpha: 0.88),
+                AppColors.surfaceContainerLow.withValues(alpha: 0.74),
+                AppColors.primaryContainer.withValues(alpha: 0.08),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border(
+              bottom: BorderSide(
+                color: AppColors.outline.withValues(alpha: 0.22),
               ),
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.onSurface.withValues(alpha: 0.08),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 6, 16, 7),
+          child: Row(
+            children: [
+              // Avatar + name — tappable, navigates to profile
+              Expanded(
+                child: InkWell(
+                  onTap: () => context.go(
+                    widget.role == 'doctor'
+                        ? AppRoutes.doctorProfile
+                        : AppRoutes.patientProfile,
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 4,
+                      horizontal: 2,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            gradient: AppColors.heroGradient,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.2,
+                                ),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        ],
+                          child: Center(
+                            child: Text(
+                              _initials,
+                              style: GoogleFonts.manrope(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _displayName,
+                                style: GoogleFonts.manrope(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.onSurface,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  _HeaderChip(
+                                    label: widget.role == 'doctor'
+                                        ? 'Doctor'
+                                        : 'Patient',
+                                    emphasized: true,
+                                  ),
+                                  if (widget.role == 'doctor' &&
+                                      _specialization.isNotEmpty)
+                                    _HeaderChip(
+                                      label: _specialization,
+                                      emphasized: false,
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Notification bell
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerLowest.withValues(
+                        alpha: 0.68,
                       ),
-                      child: Center(
-                        child: Text(
-                          _initials,
-                          style: GoogleFonts.manrope(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.outline.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.notifications_outlined,
+                      color: AppColors.onSurfaceVariant,
+                      size: 19,
+                    ),
+                  ),
+                  if (_hasNotification)
+                    const Positioned(
+                      top: 6,
+                      right: 6,
+                      child: SizedBox(
+                        width: 8,
+                        height: 8,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            shape: BoxShape.circle,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _displayName,
-                            style: GoogleFonts.manrope(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.onSurface,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              _HeaderChip(
-                                label:
-                                    widget.role == 'doctor' ? 'Doctor' : 'Patient',
-                                emphasized: true,
-                              ),
-                              if (widget.role == 'doctor' &&
-                                  _specialization.isNotEmpty)
-                                _HeaderChip(
-                                  label: _specialization,
-                                  emphasized: false,
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               ),
-            ),
-          ),
-          // Notification bell
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.notifications_outlined,
-                  color: AppColors.onSurfaceVariant,
-                  size: 22,
-                ),
-              ),
-              if (_hasNotification)
-                const Positioned(
-                  top: 6,
-                  right: 6,
-                  child: SizedBox(
-                    width: 8,
-                    height: 8,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: AppColors.error,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -196,16 +239,16 @@ class _HeaderChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: emphasized
             ? AppColors.primary.withValues(alpha: 0.12)
-            : AppColors.surfaceContainerHigh.withValues(alpha: 0.9),
+            : AppColors.surfaceContainerLowest.withValues(alpha: 0.65),
         borderRadius: BorderRadius.circular(999),
         border: emphasized
             ? null
             : Border.all(
-                color: AppColors.outline.withValues(alpha: 0.35),
+                color: AppColors.outline.withValues(alpha: 0.22),
               ),
       ),
       child: Text(

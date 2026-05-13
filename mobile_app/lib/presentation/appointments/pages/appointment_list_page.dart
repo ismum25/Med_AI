@@ -125,7 +125,6 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
       backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('Appointments'),
-        backgroundColor: AppColors.surfaceContainerLowest,
       ),
       floatingActionButton: widget.showBookFab && widget.showFindDoctorSection
           ? FloatingActionButton.extended(

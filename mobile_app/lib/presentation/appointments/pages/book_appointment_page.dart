@@ -71,7 +71,6 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
         backgroundColor: AppColors.surface,
         appBar: AppBar(
           title: const Text('Book appointment'),
-          backgroundColor: AppColors.surfaceContainerLowest,
         ),
         body: BlocConsumer<AppointmentBloc, AppointmentState>(
           listener: (context, state) {

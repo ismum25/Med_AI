@@ -147,49 +147,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
               onView: () => context.go(AppRoutes.appointments),
             ),
             const SizedBox(height: 24),
-            Text('Quick Actions',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.search_rounded,
-                    label: 'Find a Doctor',
-                    onTap: () => context.go(AppRoutes.appointments),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.add_rounded,
-                    label: 'Book Appointment',
-                    onTap: () => context.go(AppRoutes.appointments),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.healing_outlined,
-                    label: 'Report Injury',
-                    onTap: () => context.go(AppRoutes.incidents),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.medical_information_outlined,
-                    label: 'View Incidents',
-                    onTap: () => context.go(AppRoutes.incidents),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -391,70 +348,6 @@ class _NextAppointmentCard extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-// Quick Action Card
-// ─────────────────────────────────────────────
-class _QuickActionCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _QuickActionCard({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.22),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: Colors.white, size: 22),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: GoogleFonts.manrope(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  height: 1.3,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

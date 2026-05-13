@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/constants/app_routes.dart';
@@ -163,11 +164,20 @@ class _HealthcareAppState extends State<HealthcareApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Health Care',
-      theme: AppTheme.lightTheme,
-      routerConfig: _router,
-      debugShowCheckedModeBanner: false,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: AppColors.surface,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: AppColors.surface,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+      child: MaterialApp.router(
+        title: 'Health Care',
+        theme: AppTheme.lightTheme,
+        routerConfig: _router,
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }
