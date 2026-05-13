@@ -112,7 +112,8 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => sl<AppointmentBloc>()..add(LoadAppointments())),
+        BlocProvider(
+            create: (_) => sl<AppointmentBloc>()..add(LoadAppointments())),
         BlocProvider(create: (_) => sl<DoctorDiscoveryCubit>()..load()),
       ],
       child: _buildScaffold(context),
@@ -179,7 +180,8 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
         physics: AlwaysScrollableScrollPhysics(),
         child: SizedBox(
           height: 400,
-          child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          child: Center(
+              child: CircularProgressIndicator(color: AppColors.primary)),
         ),
       );
     }
@@ -245,7 +247,8 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
               ),
             )
           else if (apptState is AppointmentError)
-            Text(apptState.message, style: const TextStyle(color: AppColors.error))
+            Text(apptState.message,
+                style: const TextStyle(color: AppColors.error))
           else if (apptState is AppointmentsLoaded) ...[
             if (apptState.appointments.isEmpty)
               Container(
@@ -301,7 +304,8 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
           side: BorderSide(
             color: selected == null ? AppColors.primary : AppColors.outline,
           ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
       ),
       ...docState.specializations.map(
@@ -473,7 +477,8 @@ class _AppointmentTile extends StatelessWidget {
               : AppColors.primary,
         ),
         title: Text(
-          DateFormat('MMM dd, yyyy · hh:mm a').format(appointment.scheduledAt.toLocal()),
+          DateFormat('MMM dd, yyyy · hh:mm a')
+              .format(appointment.scheduledAt.toLocal()),
           style: GoogleFonts.inter(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(subtitle),
@@ -529,10 +534,9 @@ class _DoctorCard extends StatelessWidget {
                   radius: 28,
                   backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                   foregroundColor: AppColors.primary,
-                  backgroundImage:
-                      (doctor.profileImageUrl ?? '').isNotEmpty
-                          ? NetworkImage(doctor.profileImageUrl!)
-                          : null,
+                  backgroundImage: (doctor.profileImageUrl ?? '').isNotEmpty
+                      ? NetworkImage(doctor.profileImageUrl!)
+                      : null,
                   child: (doctor.profileImageUrl ?? '').isEmpty
                       ? Text(
                           initials,
