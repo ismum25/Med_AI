@@ -55,7 +55,9 @@ class PatientShell extends StatelessWidget {
       ),
       bottomNavigationBar: FloatingGlassNavBar(
         selectedIndex: idx,
-        onDestinationSelected: (i) => context.go(_tabs[i]),
+        onDestinationSelected: (i) {
+          if (i != idx) context.go(_tabs[i]);
+        },
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),

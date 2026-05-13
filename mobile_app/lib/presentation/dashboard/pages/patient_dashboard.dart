@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,6 +22,7 @@ class PatientDashboard extends StatefulWidget {
 class _PatientDashboardState extends State<PatientDashboard> {
   List<Map<String, dynamic>> _appointments = [];
   List<Map<String, dynamic>> _reports = [];
+  List<Map<String, dynamic>> _incidents = [];
   bool _loading = true;
   String? _error;
 
@@ -40,12 +43,14 @@ class _PatientDashboardState extends State<PatientDashboard> {
       final results = await Future.wait([
         client.dio.get(ApiEndpoints.appointments),
         client.dio.get(ApiEndpoints.reports),
+        client.dio.get(ApiEndpoints.incidents),
       ]);
       if (mounted) {
         setState(() {
           _appointments =
               List<Map<String, dynamic>>.from(results[0].data as List);
           _reports = List<Map<String, dynamic>>.from(results[1].data as List);
+          _incidents = List<Map<String, dynamic>>.from(results[2].data as List);
           _loading = false;
         });
       }
@@ -135,6 +140,15 @@ class _PatientDashboardState extends State<PatientDashboard> {
                     iconColor: AppColors.primaryContainer,
                   ),
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: StatCard(
+                    value: _incidents.length,
+                    label: 'Incidents',
+                    icon: Icons.healing_rounded,
+                    iconColor: AppColors.accent,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 24),
@@ -196,19 +210,8 @@ class _NextAppointmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (appointment == null) {
-      return Container(
+      return _GlassPanel(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.onSurface.withValues(alpha: 0.06),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
         child: Row(
           children: [
             Container(
@@ -258,30 +261,15 @@ class _NextAppointmentCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onView,
-      child: Container(
+      child: _GlassPanel(
         padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.primary, AppColors.primaryContainer],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.28),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
         child: Row(
           children: [
             Container(
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                gradient: AppColors.primaryGradient,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Column(
@@ -300,7 +288,7 @@ class _NextAppointmentCard extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: Colors.white.withValues(alpha: 0.82),
                     ),
                   ),
                 ],
@@ -316,7 +304,7 @@ class _NextAppointmentCard extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -326,7 +314,7 @@ class _NextAppointmentCard extends StatelessWidget {
                     DateFormat('hh:mm a, EEEE').format(at),
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: AppColors.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -335,7 +323,7 @@ class _NextAppointmentCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
@@ -343,7 +331,7 @@ class _NextAppointmentCard extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -409,20 +397,9 @@ class _RecentReportsRow extends StatelessWidget {
               'Report';
           return GestureDetector(
             onTap: onTap,
-            child: Container(
+            child: _GlassPanel(
               width: 140,
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.onSurface.withValues(alpha: 0.06),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -487,19 +464,8 @@ class _EmptyBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return _GlassPanel(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.onSurface.withValues(alpha: 0.05),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
       child: Row(
         children: [
           Icon(icon, color: AppColors.onSurfaceVariant, size: 26),
@@ -513,6 +479,54 @@ class _EmptyBanner extends StatelessWidget {
           ),
           TextButton(onPressed: onAction, child: Text(action)),
         ],
+      ),
+    );
+  }
+}
+
+class _GlassPanel extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final double? width;
+
+  const _GlassPanel({
+    required this.child,
+    required this.padding,
+    this.width,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          width: width,
+          padding: padding,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.surfaceContainerLowest.withValues(alpha: 0.84),
+                AppColors.surfaceContainerLowest.withValues(alpha: 0.58),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: AppColors.appBarBorder.withValues(alpha: 0.72),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.onSurface.withValues(alpha: 0.06),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: child,
+        ),
       ),
     );
   }

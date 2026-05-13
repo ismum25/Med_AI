@@ -31,7 +31,7 @@ class StatCard extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 AppColors.surfaceContainerLowest.withValues(alpha: 0.82),
-                accent.withValues(alpha: 0.08),
+                AppColors.surfaceContainerLowest.withValues(alpha: 0.58),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -58,9 +58,7 @@ class StatCard extends StatelessWidget {
                 height: 3,
                 width: 42,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [accent, AppColors.accent],
-                  ),
+                  color: accent.withValues(alpha: 0.72),
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
