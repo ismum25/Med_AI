@@ -44,11 +44,15 @@ class DoctorShell extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: GradientAppBackground(
-        child: Column(
-          children: [
-            if (showHeader) const AppHeader(role: 'doctor'),
-            Expanded(child: navigationShell),
-          ],
+        child: SafeArea(
+          top: true,
+          bottom: false,
+          child: Column(
+            children: [
+              if (showHeader) const AppHeader(role: 'doctor'),
+              Expanded(child: navigationShell),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: FloatingGlassNavBar(

@@ -73,11 +73,8 @@ class _AppHeaderState extends State<AppHeader> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: true,
-      bottom: false,
-      child: Container(
-        decoration: BoxDecoration(
+    return Container(
+      decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
               AppColors.surfaceContainerLowest.withValues(alpha: 0.96),
@@ -223,7 +220,6 @@ class _AppHeaderState extends State<AppHeader> {
             ),
           ],
         ),
-      ),
     );
   }
 }

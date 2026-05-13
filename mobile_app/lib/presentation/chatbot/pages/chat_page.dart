@@ -8,7 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
-import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../injection_container.dart';
@@ -490,12 +489,7 @@ class _ChatPageState extends State<ChatPage> {
                 ? _EmptyHint(sessionCount: _sessions.length)
                 : ListView.builder(
                     controller: _scrollCtrl,
-                    padding: EdgeInsets.fromLTRB(
-                      16,
-                      16,
-                      16,
-                      AppLayoutMetrics.bottomNavReserve(context),
-                    ),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                     itemCount: _messages.length,
                     itemBuilder: (context, i) =>
                         _MessageBubble(message: _messages[i]),
@@ -672,12 +666,7 @@ class _InputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        10,
-        16,
-        AppLayoutMetrics.bottomNavReserve(context),
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
         boxShadow: [
