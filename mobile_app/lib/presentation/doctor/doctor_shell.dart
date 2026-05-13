@@ -24,16 +24,26 @@ class DoctorShell extends StatelessWidget {
     return 0;
   }
 
+  bool _isMainTabPage(BuildContext context) {
+    final location = GoRouterState.of(context).uri.toString();
+    // Check if location is exactly a main tab (no sub-routes)
+    for (final tab in _tabs) {
+      if (location == tab) return true;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final idx = _currentIndex(context);
+    final isMainPage = _isMainTabPage(context);
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            const AppHeader(role: 'doctor'),
+            if (isMainPage) const AppHeader(role: 'doctor'),
             Expanded(child: child),
           ],
         ),
