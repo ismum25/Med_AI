@@ -59,9 +59,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
       appBar: AppBar(title: const Text('My Incidents')),
       body: _buildBody(),
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(
-          bottom: AppLayoutMetrics.bottomNavReserve(context),
-        ),
+        padding: const EdgeInsets.only(bottom: 8),
         child: FloatingActionButton.extended(
           onPressed: () => context.go(AppRoutes.uploadIncident),
           backgroundColor: AppColors.primary,

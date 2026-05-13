@@ -129,9 +129,7 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
       ),
       floatingActionButton: widget.showBookFab && widget.showFindDoctorSection
           ? Padding(
-              padding: EdgeInsets.only(
-                bottom: AppLayoutMetrics.bottomNavReserve(context),
-              ),
+              padding: const EdgeInsets.only(bottom: 8),
               child: FloatingActionButton.extended(
                 onPressed: _scrollToFindDoctor,
                 icon: const Icon(Icons.add_rounded),

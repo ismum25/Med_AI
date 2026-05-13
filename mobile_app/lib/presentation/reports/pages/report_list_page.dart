@@ -49,9 +49,7 @@ class _ReportListPageState extends State<ReportListPage> {
       appBar: AppBar(title: const Text('My Reports')),
       body: _buildBody(),
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(
-          bottom: AppLayoutMetrics.bottomNavReserve(context),
-        ),
+        padding: const EdgeInsets.only(bottom: 8),
         child: FloatingActionButton.extended(
           onPressed: () => context.go(AppRoutes.uploadReport),
           backgroundColor: AppColors.primary,

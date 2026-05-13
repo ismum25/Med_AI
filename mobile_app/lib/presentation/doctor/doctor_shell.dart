@@ -12,58 +12,51 @@ class DoctorShell extends StatelessWidget {
 
   const DoctorShell({super.key, required this.navigationShell});
 
+  static const _destinations = [
+    NavigationDestination(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home_rounded),
+      label: 'Home',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.calendar_month_outlined),
+      selectedIcon: Icon(Icons.calendar_month_rounded),
+      label: 'Schedule',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.people_alt_outlined),
+      selectedIcon: Icon(Icons.people_alt_rounded),
+      label: 'Patients',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.fact_check_outlined),
+      selectedIcon: Icon(Icons.fact_check_rounded),
+      label: 'Review',
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final idx = navigationShell.currentIndex;
     final location = GoRouterState.of(context).uri.toString();
     final showHeader = location == AppRoutes.doctorDashboard;
+
     return Scaffold(
-      extendBody: false,
       backgroundColor: AppColors.surface,
       body: GradientAppBackground(
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              if (showHeader) const AppHeader(role: 'doctor'),
-              Expanded(
-                child: GradientAppBackground(
-                  child: navigationShell,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: GradientAppBackground(
-        child: FloatingGlassNavBar(
-          selectedIndex: idx,
-          onDestinationSelected: (i) {
-            if (i != idx) navigationShell.goBranch(i);
-          },
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.calendar_month_outlined),
-              selectedIcon: Icon(Icons.calendar_month_rounded),
-              label: 'Schedule',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.people_alt_outlined),
-              selectedIcon: Icon(Icons.people_alt_rounded),
-              label: 'Patients',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.fact_check_outlined),
-              selectedIcon: Icon(Icons.fact_check_rounded),
-              label: 'Review',
-            ),
+        child: Column(
+          children: [
+            if (showHeader) const AppHeader(role: 'doctor'),
+            Expanded(child: navigationShell),
           ],
         ),
+      ),
+      bottomNavigationBar: FloatingGlassNavBar(
+        selectedIndex: idx,
+        onDestinationSelected: (i) {
+          if (i != idx) navigationShell.goBranch(i);
+        },
+        destinations: _destinations,
       ),
     );
   }
