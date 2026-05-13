@@ -1,23 +1,25 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 import logging
-from sqlalchemy.ext.asyncio import create_async_engine
 
-from app.config import settings
-from app.database.base import Base
-from app.modules.auth.router import router as auth_router
-from app.modules.users.router import router as users_router
-from app.modules.appointments.router import router as appointments_router
-from app.modules.reports.router import router as reports_router
-from app.modules.ocr.router import router as ocr_router
-from app.modules.ai.router import router as ai_router
+import app.modules.ai.models  # noqa: F401
+import app.modules.appointments.models  # noqa: F401
+import app.modules.auth.models  # noqa: F401
+import app.modules.incidents.models  # noqa: F401
+import app.modules.reports.models  # noqa: F401
 
 # Import all models so Base.metadata knows about them
 import app.modules.users.models  # noqa: F401
-import app.modules.auth.models  # noqa: F401
-import app.modules.appointments.models  # noqa: F401
-import app.modules.reports.models  # noqa: F401
-import app.modules.ai.models  # noqa: F401
+from app.config import settings
+from app.database.base import Base
+from app.modules.ai.router import router as ai_router
+from app.modules.appointments.router import router as appointments_router
+from app.modules.auth.router import router as auth_router
+from app.modules.incidents.router import router as incidents_router
+from app.modules.ocr.router import router as ocr_router
+from app.modules.reports.router import router as reports_router
+from app.modules.users.router import router as users_router
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import create_async_engine
 
 logging.basicConfig(level=settings.LOG_LEVEL)
 logger = logging.getLogger(__name__)
@@ -42,6 +44,7 @@ app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(users_router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(appointments_router, prefix="/api/v1/appointments", tags=["Appointments"])
 app.include_router(reports_router, prefix="/api/v1/reports", tags=["Reports"])
+app.include_router(incidents_router, prefix="/api/v1/incidents", tags=["Incidents"])
 app.include_router(ocr_router, prefix="/api/v1/ocr", tags=["OCR"])
 app.include_router(ai_router, prefix="/api/v1/chat", tags=["AI Chatbot"])
 
