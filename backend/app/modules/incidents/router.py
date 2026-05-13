@@ -5,7 +5,7 @@ from app.core.permissions import require_patient
 from app.database.session import get_db
 from app.dependencies import get_current_user
 from app.modules.incidents import schemas, service
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -63,3 +63,13 @@ async def download_incident_image(
     if incident.file_type:
         media_type = f"image/{incident.file_type}"
     return StreamingResponse(iter([file_bytes]), media_type=media_type)
+
+
+@router.delete("/{incident_id}", status_code=204)
+async def delete_incident(
+    incident_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    await service.delete_incident(incident_id, current_user.id, current_user.role, db)
+    return Response(status_code=204)

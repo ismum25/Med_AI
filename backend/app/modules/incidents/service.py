@@ -177,21 +177,36 @@ async def create_incident(
 
     try:
         result = await _analyze_with_openrouter(file_bytes=file_bytes, mime_type=file.content_type, notes=notes)
+        # save raw payload first (so we don't lose it if casting fails)
+        incident.analysis_payload = result
+
+        # Safely extract fields
         incident.injury_type = str(result.get("injury_type") or "unknown")
         incident.severity = str(result.get("severity") or "unknown")
         incident.body_area = str(result.get("body_area") or "unknown")
-        incident.description = str(result.get("description") or "") or None
-        incident.summary = str(result.get("summary") or "") or None
+        incident.description = (str(result.get("description") or "") or None)
+        incident.summary = (str(result.get("summary") or "") or None)
+
+        # confidence may be a string or number; coerce safely
         confidence = result.get("confidence")
-        incident.confidence = float(confidence) if confidence is not None else None
-        incident.analysis_payload = result
+        try:
+            incident.confidence = float(confidence) if confidence is not None else None
+        except Exception:
+            incident.confidence = None
+
+        # If title was the default (filename or not provided), set a dynamic title
+        if (not title) or (title and title.strip() == (file.filename or "").strip()):
+            gen_injury = incident.injury_type or "Injury"
+            gen_area = incident.body_area or "Unknown"
+            incident.title = f"{gen_injury.title()} - {gen_area.title()}"
+
         incident.analysis_status = "analyzed"
     except Exception as exc:
+        # preserve any payload if present, augment with error
+        prev = incident.analysis_payload or {}
+        prev.update({"error": str(exc), "analyzed_at": datetime.now(timezone.utc).isoformat()})
+        incident.analysis_payload = prev
         incident.analysis_status = "failed"
-        incident.analysis_payload = {
-            "error": str(exc),
-            "analyzed_at": datetime.now(timezone.utc).isoformat(),
-        }
 
     await db.commit()
     await db.refresh(incident)
@@ -236,6 +251,23 @@ async def get_incident_download_url(
     incident = await get_incident_by_id(incident_id, requester_id, requester_role, db)
     file_bytes = await storage.download_file(incident.file_url)
     return incident, file_bytes
+
+
+async def delete_incident(
+    incident_id: uuid.UUID,
+    requester_id: uuid.UUID,
+    requester_role: str,
+    db: AsyncSession,
+) -> None:
+    incident = await get_incident_by_id(incident_id, requester_id, requester_role, db)
+    # attempt to delete the stored file (best-effort)
+    try:
+        storage.delete_file(incident.file_url)
+    except Exception:
+        logger.exception("Failed to delete incident file from storage")
+    # remove DB row
+    await db.delete(incident)
+    await db.commit()
 
 
 def incident_to_response(incident: Incident) -> IncidentResponse:
