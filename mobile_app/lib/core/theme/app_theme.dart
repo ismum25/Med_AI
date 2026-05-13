@@ -3,24 +3,24 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  static const primary = Color(0xFF0F766E);
-  static const primaryContainer = Color(0xFF14B8A6);
-  static const appBar = Color(0xEAF7FFFC);
+  static const primary = Color(0xFF2563EB);
+  static const primaryContainer = Color(0xFF38BDF8);
+  static const appBar = Color(0xEAF7FBFF);
   static const appBarBorder = Color(0xB3FFFFFF);
-  static const systemBarDark = Color(0xFF09211F);
-  static const surface = Color(0xFFF5FAF8);
+  static const systemBarDark = Color(0xFF0B1736);
+  static const surface = Color(0xFFF4F8FF);
   static const surfaceContainerLowest = Color(0xFFFFFFFF);
-  static const surfaceContainerLow = Color(0xFFE9F4F1);
-  static const surfaceContainer = Color(0xFFDCECE7);
-  static const surfaceContainerHigh = Color(0xFFCFE3DC);
-  static const onSurface = Color(0xFF10211F);
-  static const onSurfaceVariant = Color(0xFF50645F);
-  static const outline = Color(0xFF8DA39D);
-  static const tertiary = Color(0xFFC2410C);
+  static const surfaceContainerLow = Color(0xFFEAF2FF);
+  static const surfaceContainer = Color(0xFFDDEBFF);
+  static const surfaceContainerHigh = Color(0xFFCADDF8);
+  static const onSurface = Color(0xFF111827);
+  static const onSurfaceVariant = Color(0xFF4B5F7A);
+  static const outline = Color(0xFF8FA4C4);
+  static const tertiary = Color(0xFF7C3AED);
   static const error = Color(0xFFB3261E);
   static const onPrimary = Color(0xFFFFFFFF);
-  static const accent = Color(0xFFEF7C5B);
-  static const accentContainer = Color(0xFFFFD2C4);
+  static const accent = Color(0xFF60A5FA);
+  static const accentContainer = Color(0xFFDBEAFE);
 
   static const primaryGradient = LinearGradient(
     colors: [primary, primaryContainer],
@@ -30,6 +30,17 @@ class AppColors {
 
   static const heroGradient = LinearGradient(
     colors: [primary, primaryContainer, accent],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const appBackgroundGradient = LinearGradient(
+    colors: [
+      Color(0xFFEAF4FF),
+      Color(0xFFF7FBFF),
+      Color(0xFFDFF2FF),
+    ],
+    stops: [0, 0.48, 1],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -59,7 +70,7 @@ class AppTheme {
       onSurface: AppColors.onSurface,
       onSurfaceVariant: AppColors.onSurfaceVariant,
       outline: AppColors.outline,
-      outlineVariant: const Color(0xFFBFD1CC),
+      outlineVariant: const Color(0xFFC5D7EF),
       surfaceContainerLowest: AppColors.surfaceContainerLowest,
       surfaceContainerLow: AppColors.surfaceContainerLow,
       surfaceContainer: AppColors.surfaceContainer,
@@ -135,7 +146,7 @@ class AppTheme {
         iconTheme: const IconThemeData(color: AppColors.onSurface),
         actionsIconTheme: const IconThemeData(color: AppColors.onSurface),
         systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: AppColors.surface,
+          statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.dark,
           statusBarBrightness: Brightness.light,
           systemNavigationBarColor: AppColors.surface,

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_routes.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_header.dart';
 import '../../core/widgets/floating_glass_nav_bar.dart';
+import '../../core/widgets/gradient_app_background.dart';
 
 class PatientShell extends StatelessWidget {
   final Widget child;
@@ -36,19 +36,21 @@ class PatientShell extends StatelessWidget {
     final idx = _currentIndex(context);
     final showHeader = _showHeader(context);
     return Scaffold(
-      backgroundColor: AppColors.surface,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            if (showHeader) const AppHeader(role: 'patient'),
-            Expanded(
-              child: ColoredBox(
-                color: AppColors.surface,
-                child: child,
+      extendBody: true,
+      backgroundColor: Colors.transparent,
+      body: GradientAppBackground(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              if (showHeader) const AppHeader(role: 'patient'),
+              Expanded(
+                child: GradientAppBackground(
+                  child: child,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: FloatingGlassNavBar(

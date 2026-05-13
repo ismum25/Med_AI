@@ -81,7 +81,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Doctor profile'),
       ),

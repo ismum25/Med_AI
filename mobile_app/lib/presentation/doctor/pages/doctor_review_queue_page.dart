@@ -63,7 +63,7 @@ class _DoctorReviewQueuePageState extends State<DoctorReviewQueuePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Review'),
         actions: [

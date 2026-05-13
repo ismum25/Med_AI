@@ -319,7 +319,7 @@ class _DoctorReportReviewDetailPageState
         : '';
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: const Text('Review report')),
       bottomNavigationBar: SafeArea(
         child: Padding(

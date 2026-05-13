@@ -122,7 +122,7 @@ class _AppointmentListPageState extends State<AppointmentListPage> {
 
   Widget _buildScaffold(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Appointments'),
       ),

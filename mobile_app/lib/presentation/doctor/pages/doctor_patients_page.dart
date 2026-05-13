@@ -147,7 +147,7 @@ class _DoctorPatientsPageState extends State<DoctorPatientsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: const Text('Patients')),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
