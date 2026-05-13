@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -176,16 +179,7 @@ class _IncidentCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.healing_outlined,
-                  color: AppColors.primary, size: 22),
-            ),
+            _IncidentThumbnail(incidentId: incident['id']?.toString()),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -236,6 +230,58 @@ class _IncidentCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _IncidentThumbnail extends StatelessWidget {
+  final String? incidentId;
+  const _IncidentThumbnail({this.incidentId});
+
+  @override
+  Widget build(BuildContext context) {
+    if (incidentId == null) {
+      return _placeholder();
+    }
+    return FutureBuilder<Uint8List?>(
+      future: _loadBytes(context, incidentId!),
+      builder: (context, snap) {
+        final bytes = snap.data;
+        if (bytes != null && bytes.isNotEmpty) {
+          return Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              image:
+                  DecorationImage(image: MemoryImage(bytes), fit: BoxFit.cover),
+            ),
+          );
+        }
+        return _placeholder();
+      },
+    );
+  }
+
+  Widget _placeholder() => Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Icon(Icons.healing_outlined,
+            color: AppColors.primary, size: 22),
+      );
+
+  Future<Uint8List?> _loadBytes(BuildContext context, String id) async {
+    try {
+      final client = sl<DioClient>();
+      final res = await client.dio.get(ApiEndpoints.incidentDownload(id),
+          options: Options(responseType: ResponseType.bytes));
+      return Uint8List.fromList(List<int>.from(res.data as List));
+    } catch (_) {
+      return null;
+    }
   }
 }
 

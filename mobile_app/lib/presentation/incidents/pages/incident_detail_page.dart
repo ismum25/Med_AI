@@ -61,7 +61,33 @@ class _IncidentDetailPageState extends State<IncidentDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Incident Details')),
+      appBar: AppBar(title: const Text('Incident Details'), actions: [
+        IconButton(
+          tooltip: 'Delete',
+          icon: const Icon(Icons.delete_outline),
+          onPressed: () async {
+            final ok = await showDialog<bool>(
+              context: context,
+              builder: (c) => AlertDialog(
+                title: const Text('Delete incident'),
+                content: const Text(
+                    'Are you sure you want to delete this incident?'),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(c).pop(false),
+                      child: const Text('Cancel')),
+                  TextButton(
+                      onPressed: () => Navigator.of(c).pop(true),
+                      child: const Text('Delete')),
+                ],
+              ),
+            );
+            if (ok == true) {
+              await _deleteIncident();
+            }
+          },
+        )
+      ]),
       body: _buildBody(),
     );
   }
@@ -194,6 +220,21 @@ class _IncidentDetailPageState extends State<IncidentDetailPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _deleteIncident() async {
+    try {
+      final client = sl<DioClient>();
+      await client.dio.delete(ApiEndpoints.incidentById(widget.incidentId));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Incident deleted')));
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete incident')));
+    }
   }
 
   Widget _card({required Widget child}) => Container(
