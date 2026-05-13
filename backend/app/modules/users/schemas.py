@@ -1,8 +1,8 @@
-from pydantic import BaseModel
-from typing import Optional, Any, Dict, List
 import uuid
+from typing import Any, Dict, List, Optional
 
 from app.modules.users.availability import WeeklyAvailability
+from pydantic import BaseModel
 
 
 class DoctorProfileResponse(BaseModel):
@@ -13,6 +13,8 @@ class DoctorProfileResponse(BaseModel):
     license_number: str
     hospital: Optional[str] = None
     bio: Optional[str] = None
+    source_profile_url: Optional[str] = None
+    profile_image_url: Optional[str] = None
     consultation_fee: Optional[float] = None
     available_slots: Optional[Dict[str, Any]] = None
     availability_timezone: Optional[str] = None
@@ -61,6 +63,8 @@ class DoctorListItem(BaseModel):
     full_name: str
     specialization: str
     hospital: Optional[str] = None
+    source_profile_url: Optional[str] = None
+    profile_image_url: Optional[str] = None
     consultation_fee: Optional[float] = None
     rating: float = 0.0
     years_experience: Optional[int] = None
