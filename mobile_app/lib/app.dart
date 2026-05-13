@@ -37,114 +37,150 @@ GoRouter _buildRouter(String initialLocation) => GoRouter(
         GoRoute(
             path: AppRoutes.register, builder: (_, __) => const RegisterPage()),
 
-        // Patient shell — persistent bottom nav + header
-        ShellRoute(
-          builder: (_, __, child) => PatientShell(child: child),
-          routes: [
-            GoRoute(
-              path: AppRoutes.patientDashboard,
-              builder: (_, __) => const PatientDashboard(),
-            ),
-            GoRoute(
-              path: AppRoutes.appointments,
-              builder: (_, __) => const AppointmentListPage(),
+        StatefulShellRoute.indexedStack(
+          builder: (_, __, navigationShell) =>
+              PatientShell(navigationShell: navigationShell),
+          branches: [
+            StatefulShellBranch(
               routes: [
                 GoRoute(
-                  path: 'book',
-                  builder: (_, state) => BookAppointmentPage(
-                    args: state.extra as BookAppointmentArgs?,
-                  ),
+                  path: AppRoutes.patientDashboard,
+                  builder: (_, __) => const PatientDashboard(),
                 ),
                 GoRoute(
-                  path: 'doctor/:doctorProfileId',
-                  builder: (_, state) {
-                    final id = state.pathParameters['doctorProfileId']!;
-                    return DoctorProfilePage(profileId: id);
-                  },
+                  path: AppRoutes.patientProfile,
+                  builder: (_, __) => const ProfilePage(role: 'patient'),
                 ),
               ],
             ),
-            GoRoute(
-              path: AppRoutes.reports,
-              builder: (_, __) => const ReportListPage(),
+            StatefulShellBranch(
               routes: [
                 GoRoute(
-                  path: 'upload',
-                  builder: (_, __) => const UploadReportPage(),
-                ),
-                GoRoute(
-                  path: ':reportId',
-                  builder: (_, state) {
-                    final id = state.pathParameters['reportId']!;
-                    return ReportDetailPage(reportId: id);
-                  },
+                  path: AppRoutes.appointments,
+                  builder: (_, __) => const AppointmentListPage(),
+                  routes: [
+                    GoRoute(
+                      path: 'book',
+                      builder: (_, state) => BookAppointmentPage(
+                        args: state.extra as BookAppointmentArgs?,
+                      ),
+                    ),
+                    GoRoute(
+                      path: 'doctor/:doctorProfileId',
+                      builder: (_, state) {
+                        final id = state.pathParameters['doctorProfileId']!;
+                        return DoctorProfilePage(profileId: id);
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
-            GoRoute(
-              path: AppRoutes.incidents,
-              builder: (_, __) => const IncidentListPage(),
+            StatefulShellBranch(
               routes: [
                 GoRoute(
-                  path: 'upload',
-                  builder: (_, __) => const IncidentUploadPage(),
-                ),
-                GoRoute(
-                  path: ':incidentId',
-                  builder: (_, state) {
-                    final id = state.pathParameters['incidentId']!;
-                    return IncidentDetailPage(incidentId: id);
-                  },
+                  path: AppRoutes.reports,
+                  builder: (_, __) => const ReportListPage(),
+                  routes: [
+                    GoRoute(
+                      path: 'upload',
+                      builder: (_, __) => const UploadReportPage(),
+                    ),
+                    GoRoute(
+                      path: ':reportId',
+                      builder: (_, state) {
+                        final id = state.pathParameters['reportId']!;
+                        return ReportDetailPage(reportId: id);
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
-            GoRoute(
-              path: AppRoutes.chat,
-              builder: (_, __) => const ChatPage(),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.incidents,
+                  builder: (_, __) => const IncidentListPage(),
+                  routes: [
+                    GoRoute(
+                      path: 'upload',
+                      builder: (_, __) => const IncidentUploadPage(),
+                    ),
+                    GoRoute(
+                      path: ':incidentId',
+                      builder: (_, state) {
+                        final id = state.pathParameters['incidentId']!;
+                        return IncidentDetailPage(incidentId: id);
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
-            GoRoute(
-              path: AppRoutes.patientProfile,
-              builder: (_, __) => const ProfilePage(role: 'patient'),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.chat,
+                  builder: (_, __) => const ChatPage(),
+                ),
+              ],
             ),
           ],
         ),
 
-        // Doctor shell — persistent bottom nav + header
-        ShellRoute(
-          builder: (_, __, child) => DoctorShell(child: child),
-          routes: [
-            GoRoute(
-              path: AppRoutes.doctorDashboard,
-              builder: (_, __) => const DoctorDashboard(),
-            ),
-            GoRoute(
-              path: AppRoutes.doctorAppointments,
-              builder: (_, __) => const DoctorSchedulePage(),
-            ),
-            GoRoute(
-              path: AppRoutes.patients,
-              builder: (_, __) => const DoctorPatientsPage(),
-            ),
-            GoRoute(
-              path: AppRoutes.doctorReview,
-              builder: (_, __) => const DoctorReviewQueuePage(),
+        StatefulShellRoute.indexedStack(
+          builder: (_, __, navigationShell) =>
+              DoctorShell(navigationShell: navigationShell),
+          branches: [
+            StatefulShellBranch(
               routes: [
                 GoRoute(
-                  path: ':reportId',
-                  builder: (context, state) {
-                    final id = state.pathParameters['reportId']!;
-                    return DoctorReportReviewDetailPage(reportId: id);
-                  },
+                  path: AppRoutes.doctorDashboard,
+                  builder: (_, __) => const DoctorDashboard(),
+                ),
+                GoRoute(
+                  path: AppRoutes.doctorChat,
+                  builder: (_, __) => const ChatPage(),
+                ),
+                GoRoute(
+                  path: AppRoutes.doctorProfile,
+                  builder: (_, __) => const ProfilePage(role: 'doctor'),
                 ),
               ],
             ),
-            GoRoute(
-              path: AppRoutes.doctorChat,
-              builder: (_, __) => const ChatPage(),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.doctorAppointments,
+                  builder: (_, __) => const DoctorSchedulePage(),
+                ),
+              ],
             ),
-            GoRoute(
-              path: AppRoutes.doctorProfile,
-              builder: (_, __) => const ProfilePage(role: 'doctor'),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.patients,
+                  builder: (_, __) => const DoctorPatientsPage(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.doctorReview,
+                  builder: (_, __) => const DoctorReviewQueuePage(),
+                  routes: [
+                    GoRoute(
+                      path: ':reportId',
+                      builder: (context, state) {
+                        final id = state.pathParameters['reportId']!;
+                        return DoctorReportReviewDetailPage(reportId: id);
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),

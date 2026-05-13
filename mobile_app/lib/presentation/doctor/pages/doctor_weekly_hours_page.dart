@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/api_endpoints.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../injection_container.dart';
@@ -433,7 +434,7 @@ class _DoctorWeeklyHoursPageState extends State<DoctorWeeklyHoursPage> {
         color: AppColors.primary,
         onRefresh: _load,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          padding: AppLayoutMetrics.scrollPadding(context, top: 8),
           children: [
             Text(
               'Patients can request appointments within these windows.',

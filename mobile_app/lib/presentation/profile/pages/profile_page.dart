@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/storage/session_persistence.dart';
 import '../../../core/theme/app_theme.dart';
@@ -144,7 +145,12 @@ class _ProfileBody extends StatelessWidget {
                 roleLabel: roleLabel),
             const SizedBox(height: 24),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                0,
+                20,
+                AppLayoutMetrics.bottomNavReserve(context),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

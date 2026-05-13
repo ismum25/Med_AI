@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/stat_card.dart';
@@ -204,6 +205,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   },
                 ),
               ),
+            SizedBox(height: AppLayoutMetrics.bottomNavReserve(context)),
           ],
         ),
       ),

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../injection_container.dart';
@@ -47,12 +48,18 @@ class _ReportListPageState extends State<ReportListPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('My Reports')),
       body: _buildBody(),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go(AppRoutes.uploadReport),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.upload_rounded),
-        label: Text('Upload', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: AppLayoutMetrics.bottomNavReserve(context),
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => context.go(AppRoutes.uploadReport),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.upload_rounded),
+          label: Text('Upload',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        ),
       ),
     );
   }
@@ -96,7 +103,7 @@ class _ReportListPageState extends State<ReportListPage> {
       color: AppColors.primary,
       onRefresh: _loadReports,
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+        padding: AppLayoutMetrics.scrollPadding(context),
         itemCount: _reports.length,
         separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (context, i) => _ReportCard(

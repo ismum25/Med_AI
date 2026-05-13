@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/appointment_slot.dart';
 import '../../../injection_container.dart';
@@ -119,7 +120,12 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
             final hasPickedDate = _selectedDate != null;
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: AppLayoutMetrics.scrollPadding(
+                context,
+                left: 24,
+                top: 24,
+                right: 24,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

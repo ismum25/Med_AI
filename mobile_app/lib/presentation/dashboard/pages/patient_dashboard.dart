@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/stat_card.dart';
@@ -185,7 +186,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 reports: _reports.take(3).toList(),
                 onTap: () => context.go(AppRoutes.reports),
               ),
-            const SizedBox(height: 32),
+            SizedBox(height: AppLayoutMetrics.bottomNavReserve(context)),
           ],
         ),
       ),

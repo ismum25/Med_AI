@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/api_endpoints.dart';
+import '../../../core/layout/app_layout_metrics.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../injection_container.dart';
@@ -323,7 +324,12 @@ class _DoctorReportReviewDetailPageState
       appBar: AppBar(title: const Text('Review report')),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            8,
+            20,
+            AppLayoutMetrics.bottomNavReserve(context),
+          ),
           child: FilledButton(
             onPressed: _submitting ? null : _confirmVerify,
             style: FilledButton.styleFrom(
@@ -340,7 +346,7 @@ class _DoctorReportReviewDetailPageState
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+        padding: AppLayoutMetrics.scrollPadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
