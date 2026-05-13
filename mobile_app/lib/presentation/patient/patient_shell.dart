@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../core/constants/app_routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_header.dart';
@@ -12,6 +13,7 @@ class PatientShell extends StatelessWidget {
     AppRoutes.patientDashboard,
     AppRoutes.appointments,
     AppRoutes.reports,
+    AppRoutes.incidents,
     AppRoutes.chat,
   ];
 
@@ -67,6 +69,11 @@ class PatientShell extends StatelessWidget {
                 icon: Icon(Icons.folder_outlined),
                 selectedIcon: Icon(Icons.folder_rounded),
                 label: 'Reports',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.healing_outlined),
+                selectedIcon: Icon(Icons.healing_rounded),
+                label: 'Incidents',
               ),
               NavigationDestination(
                 icon: Icon(Icons.auto_awesome_outlined),

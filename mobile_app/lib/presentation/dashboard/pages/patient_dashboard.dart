@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/network/dio_client.dart';
@@ -29,7 +30,11 @@ class _PatientDashboardState extends State<PatientDashboard> {
   }
 
   Future<void> _loadData() async {
-    if (mounted) setState(() { _loading = true; _error = null; });
+    if (mounted)
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
     try {
       final client = sl<DioClient>();
       final results = await Future.wait([
@@ -38,13 +43,18 @@ class _PatientDashboardState extends State<PatientDashboard> {
       ]);
       if (mounted) {
         setState(() {
-          _appointments = List<Map<String, dynamic>>.from(results[0].data as List);
+          _appointments =
+              List<Map<String, dynamic>>.from(results[0].data as List);
           _reports = List<Map<String, dynamic>>.from(results[1].data as List);
           _loading = false;
         });
       }
     } catch (_) {
-      if (mounted) setState(() { _error = 'Failed to load data'; _loading = false; });
+      if (mounted)
+        setState(() {
+          _error = 'Failed to load data';
+          _loading = false;
+        });
     }
   }
 
@@ -69,12 +79,14 @@ class _PatientDashboardState extends State<PatientDashboard> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.primary));
     }
     if (_error != null) {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(_error!, style: GoogleFonts.inter(color: AppColors.onSurfaceVariant)),
+          Text(_error!,
+              style: GoogleFonts.inter(color: AppColors.onSurfaceVariant)),
           const SizedBox(height: 12),
           TextButton(onPressed: _loadData, child: const Text('Retry')),
         ]),
@@ -126,7 +138,8 @@ class _PatientDashboardState extends State<PatientDashboard> {
               ],
             ),
             const SizedBox(height: 24),
-            Text('Next Appointment', style: Theme.of(context).textTheme.titleLarge),
+            Text('Next Appointment',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             _NextAppointmentCard(
               appointment: nextAppt,
@@ -134,7 +147,8 @@ class _PatientDashboardState extends State<PatientDashboard> {
               onView: () => context.go(AppRoutes.appointments),
             ),
             const SizedBox(height: 24),
-            Text('Quick Actions', style: Theme.of(context).textTheme.titleLarge),
+            Text('Quick Actions',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -155,11 +169,32 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _QuickActionCard(
+                    icon: Icons.healing_outlined,
+                    label: 'Report Injury',
+                    onTap: () => context.go(AppRoutes.incidents),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _QuickActionCard(
+                    icon: Icons.medical_information_outlined,
+                    label: 'View Incidents',
+                    onTap: () => context.go(AppRoutes.incidents),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Recent Reports', style: Theme.of(context).textTheme.titleLarge),
+                Text('Recent Reports',
+                    style: Theme.of(context).textTheme.titleLarge),
                 TextButton(
                   onPressed: () => context.go(AppRoutes.reports),
                   child: const Text('See All'),
@@ -248,7 +283,8 @@ class _NextAppointmentCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     'Book one to get started',
-                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.onSurfaceVariant),
+                    style: GoogleFonts.inter(
+                        fontSize: 12, color: AppColors.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -436,20 +472,29 @@ class _RecentReportsRow extends StatelessWidget {
 
   IconData _icon(String? type) {
     switch (type) {
-      case 'blood_test': return Icons.bloodtype_outlined;
-      case 'xray': return Icons.image_outlined;
-      case 'mri': return Icons.monitor_heart_outlined;
-      case 'urine': return Icons.science_outlined;
-      default: return Icons.description_outlined;
+      case 'blood_test':
+        return Icons.bloodtype_outlined;
+      case 'xray':
+        return Icons.image_outlined;
+      case 'mri':
+        return Icons.monitor_heart_outlined;
+      case 'urine':
+        return Icons.science_outlined;
+      default:
+        return Icons.description_outlined;
     }
   }
 
   String _statusLabel(String status) {
     switch (status) {
-      case 'verified': return 'Verified';
-      case 'extracted': return 'Ready';
-      case 'processing': return 'Processing';
-      default: return 'Pending';
+      case 'verified':
+        return 'Verified';
+      case 'extracted':
+        return 'Ready';
+      case 'processing':
+        return 'Processing';
+      default:
+        return 'Pending';
     }
   }
 
@@ -502,7 +547,8 @@ class _RecentReportsRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: isVerified
                           ? AppColors.primary.withValues(alpha: 0.10)
@@ -514,7 +560,9 @@ class _RecentReportsRow extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
-                        color: isVerified ? AppColors.primary : AppColors.onSurfaceVariant,
+                        color: isVerified
+                            ? AppColors.primary
+                            : AppColors.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -566,7 +614,8 @@ class _EmptyBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: GoogleFonts.inter(fontSize: 14, color: AppColors.onSurfaceVariant),
+              style: GoogleFonts.inter(
+                  fontSize: 14, color: AppColors.onSurfaceVariant),
             ),
           ),
           TextButton(onPressed: onAction, child: Text(action)),

@@ -11,11 +11,16 @@ class AppRoutes {
   static const String reports = '/reports';
   static const String uploadReport = '/reports/upload';
   static String patientReportDetail(String reportId) => '/reports/$reportId';
+  static const String incidents = '/incidents';
+  static const String uploadIncident = '/incidents/upload';
+  static String patientIncidentDetail(String incidentId) =>
+      '/incidents/$incidentId';
   static const String chat = '/chat';
   static const String patients = '/doctor/patients';
   static const String doctorAppointments = '/doctor/appointments';
   static const String doctorReview = '/doctor/review';
-  static String doctorReviewDetail(String reportId) => '$doctorReview/$reportId';
+  static String doctorReviewDetail(String reportId) =>
+      '$doctorReview/$reportId';
   static const String doctorChat = '/doctor/chat';
   static const String patientProfile = '/patient/profile';
   static const String doctorProfile = '/doctor/profile';
