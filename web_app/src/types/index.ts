@@ -18,7 +18,15 @@ export interface DoctorProfile {
   available_slots: Record<string, string[]>;
   availability_timezone?: string | null;
   rating: number;
+  bio?: string;
   user: User;
+}
+
+export interface DoctorListItem {
+  user_id: string;
+  full_name: string;
+  specialization: string;
+  rating: number;
 }
 
 export interface PatientProfile {
@@ -27,6 +35,15 @@ export interface PatientProfile {
   allergies: string[];
   emergency_contact: Record<string, string> | null;
   user: User;
+}
+
+export interface PatientDetail {
+  user_id: string;
+  full_name: string;
+  date_of_birth?: string | null;
+  blood_type?: string | null;
+  allergies?: string[] | null;
+  emergency_contact?: Record<string, string> | null;
 }
 
 export type AppointmentStatus =
@@ -50,27 +67,42 @@ export interface Appointment {
   doctor?: User;
 }
 
-export type OcrStatus = 'pending' | 'processing' | 'extracted' | 'failed';
+export interface DoctorSlots {
+  date: string;
+  available_slots: string[];
+  booked_slots: string[];
+}
+
+export type OcrStatus = 'pending' | 'processing' | 'extracted' | 'failed' | 'verified';
 export type ReportType = 'blood_test' | 'xray' | 'mri' | 'urine' | 'other';
 
 export interface MedicalReport {
   id: string;
   patient_id: string;
   title: string;
+  file_name?: string;
   report_type: ReportType;
   file_url: string;
   ocr_status: OcrStatus;
   ocr_confidence: number | null;
   verified: boolean;
+  notes?: string | null;
   created_at: string;
-  extracted_data?: ExtractedReportData;
+  extracted_data?: Record<string, unknown>;
 }
 
-export interface ExtractedReportData {
+export interface Incident {
   id: string;
-  report_id: string;
-  data: Record<string, unknown>;
-  data_type: string;
+  patient_id: string;
+  title: string;
+  notes?: string | null;
+  analysis_status: 'pending' | 'processing' | 'analyzed' | 'failed';
+  injury_type?: string | null;
+  severity?: string | null;
+  body_area?: string | null;
+  summary?: string | null;
+  description?: string | null;
+  created_at: string;
 }
 
 export interface ChatSession {
@@ -87,6 +119,24 @@ export interface ChatMessage {
   role: 'user' | 'assistant' | 'tool';
   content: string;
   created_at: string;
+}
+
+/** Full profile response from /users/me/profile */
+export interface ProfileData {
+  id?: string;
+  email: string;
+  full_name: string;
+  role: UserRole;
+  // patient fields
+  date_of_birth?: string | null;
+  blood_type?: string | null;
+  allergies?: string | string[] | null;
+  // doctor fields
+  specialization?: string | null;
+  license_number?: string | null;
+  bio?: string | null;
+  available_slots?: Record<string, string[]> | null;
+  availability_timezone?: string | null;
 }
 
 export interface AuthTokens {
