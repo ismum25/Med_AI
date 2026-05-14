@@ -110,12 +110,19 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="flex flex-col w-64 h-screen bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 px-4 py-6 flex-shrink-0">
-      <div className="flex items-center gap-3 mb-8 px-2">
-        <div className="w-8 h-8 rounded-lg overflow-hidden">
-          <Image src="/logo-192.png" alt="Health Care logo" width={32} height={32} />
+    <aside className="flex flex-col w-72 h-screen bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-r border-gray-200/60 dark:border-slate-800/60 px-5 py-8 flex-shrink-0 relative shadow-[4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-none">
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-primary-500/5 to-transparent pointer-events-none" />
+
+      <div className="flex flex-col mb-10 px-2 relative z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl shadow-sm overflow-hidden flex-shrink-0 border border-gray-100/50 dark:border-slate-700/50">
+            <Image src="/logo-192.png" alt="Health Care logo" width={36} height={36} className="w-full h-full object-cover" />
+          </div>
+          <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-100">Health Care</span>
         </div>
-        <span className="font-semibold text-gray-900 dark:text-gray-100">Health Care</span>
+        <div className="mt-3 inline-flex self-start px-3 py-1 bg-primary-600 text-white text-[10px] font-bold uppercase tracking-widest rounded-full shadow-sm shadow-primary-500/20">
+          {role} Portal
+        </div>
       </div>
 
       <nav className="flex-1 space-y-1">
@@ -124,48 +131,52 @@ export default function Sidebar() {
             key={item.href}
             href={item.href}
             className={clsx(
-              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+              'flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200',
               isActive(item.href)
-                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700'
-                : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-900 dark:text-gray-100'
+                ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20 dark:shadow-none'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/80 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-slate-800/80'
             )}
           >
-            <span className="w-5 h-5 flex-shrink-0">{item.icon}</span>
+            <span className={clsx("w-5 h-5 flex-shrink-0", isActive(item.href) ? "text-white" : "")}>{item.icon}</span>
             {item.label}
           </Link>
         ))}
       </nav>
 
-      <div className="border-t border-gray-200 dark:border-slate-800 pt-4 mt-4 space-y-1">
+      <div className="mt-auto pt-6 space-y-2 relative z-10">
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:bg-slate-800 transition-colors"
+          className="flex items-center gap-3.5 w-full px-4 py-3 rounded-xl text-sm font-semibold text-gray-500 hover:text-gray-900 hover:bg-gray-100/80 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-slate-800/80 transition-all duration-200"
         >
           <div className="w-5 h-5 flex items-center justify-center">
             {mounted && theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </div>
-          Toggle Theme
+          {mounted && theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </button>
+
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-200 dark:via-slate-800 to-transparent my-4" />
+
         <Link
           href={profileHref}
           className={clsx(
-            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+            'flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-200',
             pathname === profileHref
-              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700'
-              : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-900 dark:text-gray-100'
+              ? 'bg-primary-50 dark:bg-slate-800/80 text-primary-700 dark:text-primary-400'
+              : 'hover:bg-gray-100/80 dark:hover:bg-slate-800/80'
           )}
         >
-          <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm border-2 border-white dark:border-slate-800">
             {initials}
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{user?.full_name ?? 'User'}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 capitalize">{role}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{user?.full_name ?? 'User'}</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">{role}</p>
           </div>
         </Link>
+
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:bg-slate-800 transition-colors"
+          className="flex items-center gap-3.5 w-full px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200"
         >
           <LogoutIcon />
           Sign Out

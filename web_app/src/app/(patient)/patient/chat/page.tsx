@@ -132,7 +132,7 @@ export default function PatientChat() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] max-w-5xl mx-auto gap-4">
+    <div className="flex h-[calc(100vh-4rem)] w-full gap-4">
       {/* Sidebar */}
       <div className="w-64 flex-shrink-0 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
         <div className="p-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
