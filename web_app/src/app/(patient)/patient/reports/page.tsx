@@ -111,13 +111,36 @@ export default function PatientReports() {
   );
 }
 
+function formatExtractedValue(value: unknown): string {
+  if (value == null) return '—';
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '—';
+    return value.map(formatExtractedValue).join(', ');
+  }
+  if (typeof value === 'object') {
+    const keys = Object.keys(value as Record<string, unknown>);
+    if (keys.length === 0) return '—';
+    return keys.map((k) => `${k}: ${formatExtractedValue((value as Record<string, unknown>)[k])}`).join(' | ');
+  }
+  const s = String(value).trim();
+  return s === '' ? '—' : s;
+}
+
 function ReportDetailView({ id }: { id: string }) {
   const [report, setReport] = useState<MedicalReport | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
 
   useEffect(() => {
     setLoading(true);
-    reportsApi.get(id).then((r) => setReport(r.data)).catch(() => {}).finally(() => setLoading(false));
+    setEditing(false);
+    reportsApi.get(id).then((r) => {
+      setReport(r.data);
+      setEditTitle(r.data.title || r.data.file_name || '');
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [id]);
 
   async function openFile() {
@@ -128,6 +151,26 @@ function ReportDetailView({ id }: { id: string }) {
       else toast.error('No download URL');
     } catch {
       toast.error('Failed to get download link');
+    }
+  }
+
+  async function handleSaveTitle() {
+    if (!editTitle.trim()) {
+      toast.error('Title cannot be empty');
+      return;
+    }
+    setSaving(true);
+    try {
+      // Assuming update endpoint exists, though we might only be able to patch
+      // If there is no specific update title endpoint, we do our best.
+      const res = await reportsApi.update(id, { title: editTitle.trim() });
+      setReport(res.data);
+      setEditing(false);
+      toast.success('Title updated');
+    } catch {
+      toast.error('Failed to update title');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -147,77 +190,122 @@ function ReportDetailView({ id }: { id: string }) {
         : report.extracted_data;
     } catch { /* ignore parse error */ }
   }
-  const results = extracted?.results as Record<string, unknown>[] | undefined;
+
+  const title = report.title || report.file_name || 'Medical Report';
+  const reportDate = extracted?.report_date as string | undefined;
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-6">
-      <div className="flex items-start justify-between pb-4 border-b border-gray-100 dark:border-slate-800">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{report.title || report.file_name || 'Medical Report'}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{humanizeSnake(report.report_type)} • {formatDateTime(report.created_at)}</p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusColor(report.ocr_status)}`}>
-            {capitalize(report.ocr_status)}
-          </span>
-          <button onClick={openFile} className="text-sm font-medium text-primary-600 hover:underline flex items-center gap-1 bg-primary-50 dark:bg-primary-900/30 px-3 py-1.5 rounded-lg">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
-            Open File
-          </button>
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50/30 dark:bg-slate-950/30">
+      
+      {/* Title Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm">
+        {editing ? (
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1.5"><svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg> Title</label>
+              <input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                disabled={saving}
+                className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setEditing(false)} disabled={saving} className="flex-1 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancel</button>
+              <button onClick={handleSaveTitle} disabled={saving} className="flex-1 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 rounded-lg transition-colors flex items-center justify-center">
+                {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Save'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start justify-between">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight">{title}</h2>
+            <button onClick={() => setEditing(true)} className="p-1.5 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors ml-2 flex-shrink-0" title="Edit title">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+            </button>
+          </div>
+        )}
+        {!editing && (
+          <div className="mt-4">
+            <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full ${statusColor(report.ocr_status)}`}>
+              {capitalize(report.ocr_status)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Meta Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-4 flex flex-col gap-4">
+          
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-primary-600 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v14.313c0 1.026.738 1.905 1.748 2.062 1.34.208 2.72.313 4.122.313 1.402 0 2.782-.105 4.122-.313 1.01-.157 1.748-1.036 1.748-2.062V5.25A2.25 2.25 0 0012.432 3h-2.864z" /></svg>
+            <div className="flex-1">
+              <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Type</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">{humanizeSnake(report.report_type)}</p>
+            </div>
+          </div>
+          <div className="h-px bg-gray-100 dark:bg-slate-800" />
+          
+          {reportDate && (
+            <>
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-primary-600 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                <div className="flex-1">
+                  <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Report Date</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">{reportDate}</p>
+                </div>
+              </div>
+              <div className="h-px bg-gray-100 dark:bg-slate-800" />
+            </>
+          )}
+
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-primary-600 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+            <div className="flex-1">
+              <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">File</p>
+              <div className="mt-1 flex items-center justify-between gap-2">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{report.file_name || 'Attached file'}</p>
+                <button onClick={openFile} className="text-xs font-semibold text-primary-600 hover:text-primary-700 bg-primary-50 dark:bg-primary-900/30 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1">
+                  Open
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="h-px bg-gray-100 dark:bg-slate-800" />
+
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-primary-600 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div className="flex-1">
+              <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Uploaded</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">{formatDateTime(report.created_at)}</p>
+            </div>
+          </div>
+          
         </div>
       </div>
 
-      {extracted && Object.keys(extracted).length > 0 && (
-        <div className="space-y-4">
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">Extracted Data</h3>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 bg-gray-50 dark:bg-slate-950 p-4 rounded-xl border border-gray-100 dark:border-slate-800">
-            {['test_name', 'lab_name', 'patient_name', 'report_date', 'doctor_name'].map((key) => {
-              const val = extracted![key];
-              if (!val) return null;
-              return (
-                <div key={key}>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{humanizeSnake(key)}</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-0.5">{String(val)}</p>
-                </div>
-              );
-            })}
+      {/* Extracted Data Card */}
+      {(report.ocr_status === 'extracted' || report.ocr_status === 'verified') && extracted && Object.keys(extracted).length > 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="p-4 bg-gray-50/50 dark:bg-slate-950/50 border-b border-gray-100 dark:border-slate-800 flex items-center gap-2">
+            <svg className="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+            <h3 className="font-bold text-gray-900 dark:text-gray-100">Extracted Data</h3>
           </div>
-
-          {results && results.length > 0 && (
-            <div className="border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-gray-50 dark:bg-slate-950 text-gray-600 dark:text-gray-300">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Parameter</th>
-                    <th className="px-4 py-3 font-semibold">Value</th>
-                    <th className="px-4 py-3 font-semibold">Unit</th>
-                    <th className="px-4 py-3 font-semibold">Reference Range</th>
-                    <th className="px-4 py-3 font-semibold">Flag</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                  {results.map((row, i) => (
-                    <tr key={i} className="hover:bg-gray-50/50 dark:hover:bg-slate-950/50 transition-colors">
-                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{String(row.parameter || '')}</td>
-                      <td className="px-4 py-3 font-semibold">{String(row.value || '')}</td>
-                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{String(row.unit || '')}</td>
-                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{String(row.reference_range || '')}</td>
-                      <td className="px-4 py-3">
-                        {row.flag ? (
-                          <span className={`text-xs font-bold px-2.5 py-1 rounded-md ${
-                            String(row.flag).toLowerCase() === 'high' || String(row.flag).toLowerCase() === 'low'
-                              ? 'text-red-700 bg-red-50 dark:bg-red-900/30 dark:text-red-400'
-                              : 'text-gray-700 bg-gray-100 dark:text-gray-300 dark:bg-slate-800'
-                          }`}>{String(row.flag)}</span>
-                        ) : null}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <div className="p-4 flex flex-col gap-4">
+            {Object.entries(extracted).map(([key, value], index, arr) => (
+              <div key={key}>
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-primary-600 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{humanizeSnake(key)}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5 whitespace-pre-wrap">{formatExtractedValue(value)}</p>
+                  </div>
+                </div>
+                {index < arr.length - 1 && <div className="h-px bg-gray-100 dark:bg-slate-800 mt-4" />}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
