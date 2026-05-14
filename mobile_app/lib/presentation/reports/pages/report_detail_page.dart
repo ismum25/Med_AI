@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -109,13 +110,13 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     if (value == null) return '—';
     if (value is List) {
       if (value.isEmpty) return '—';
-      return value.map((v) => _formatExtractedValue(v)).join(', ');
+      return value.map((v) => _formatExtractedValue(v)).join('\n\n');
     }
-    if (value is Map<String, dynamic>) {
+    if (value is Map) {
       if (value.isEmpty) return '—';
       return value.entries
-          .map((e) => '${e.key}: ${_formatExtractedValue(e.value)}')
-          .join(' | ');
+          .map((e) => '${_labelizeKey(e.key.toString())}: ${_formatExtractedValue(e.value)}')
+          .join('\n');
     }
     final s = value.toString().trim();
     return s.isEmpty ? '—' : s;
@@ -147,7 +148,19 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     final fileName = r['file_name'] as String?;
     final reportDate = r['report_date'] as String?;
     final createdAt = r['created_at'] as String?;
-    final extractedData = r['extracted_data'] as Map<String, dynamic>?;
+    
+    Map<String, dynamic>? extractedData;
+    final rawExtracted = r['extracted_data'];
+    if (rawExtracted is String) {
+      try {
+        extractedData = jsonDecode(rawExtracted) as Map<String, dynamic>?;
+      } catch (_) {}
+    } else if (rawExtracted is Map<String, dynamic>) {
+      extractedData = rawExtracted;
+    } else if (rawExtracted is Map) {
+      extractedData = Map<String, dynamic>.from(rawExtracted);
+    }
+
     final displayType = type.replaceAll('_', ' ');
 
     String createdStr = '';
@@ -225,7 +238,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                           _labelizeKey(entry.key),
                           _formatExtractedValue(entry.value),
                         ),
-                        if (entry.key != extractedData.keys.last) _divider(),
+                        if (entry.key != extractedData!.keys.last) _divider(),
                       ],
                     ),
                   ),
