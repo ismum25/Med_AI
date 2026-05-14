@@ -57,8 +57,24 @@ async def health_check():
 @app.on_event("startup")
 async def startup_event():
     logger.info(f"Starting {settings.APP_NAME} in {settings.APP_ENV} mode")
-    engine = create_async_engine(settings.DATABASE_URL, echo=False)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    await engine.dispose()
-    logger.info("Database tables ensured.")
+    import asyncio
+    from app.database.session import engine as shared_engine
+
+    max_retries = 10
+    delay = 3  # seconds between retries
+    for attempt in range(1, max_retries + 1):
+        try:
+            async with shared_engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            logger.info("Database tables ensured.")
+            return
+        except Exception as exc:
+            logger.warning(
+                "DB not ready (attempt %d/%d): %s — retrying in %ds…",
+                attempt, max_retries, exc, delay,
+            )
+            if attempt == max_retries:
+                logger.error("Could not connect to DB after %d attempts. Aborting startup.", max_retries)
+                raise
+            await asyncio.sleep(delay)
+

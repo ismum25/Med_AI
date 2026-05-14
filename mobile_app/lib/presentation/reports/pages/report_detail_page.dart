@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -97,10 +98,51 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     }
   }
 
+  Future<void> _delete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Report'),
+        content: const Text('Are you sure you want to delete this report?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    
+    try {
+      final client = sl<DioClient>();
+      await client.dio.delete('/reports/${widget.reportId}');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Report deleted'), backgroundColor: Colors.green),
+      );
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to delete report'), backgroundColor: AppColors.error),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Report Details')),
+      appBar: AppBar(
+        title: const Text('Report Details'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            onPressed: _delete,
+          ),
+        ],
+      ),
       body: _buildBody(),
     );
   }
@@ -109,13 +151,13 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     if (value == null) return '—';
     if (value is List) {
       if (value.isEmpty) return '—';
-      return value.map((v) => _formatExtractedValue(v)).join(', ');
+      return value.map((v) => _formatExtractedValue(v)).join('\n\n');
     }
-    if (value is Map<String, dynamic>) {
+    if (value is Map) {
       if (value.isEmpty) return '—';
       return value.entries
-          .map((e) => '${e.key}: ${_formatExtractedValue(e.value)}')
-          .join(' | ');
+          .map((e) => '${_labelizeKey(e.key.toString())}: ${_formatExtractedValue(e.value)}')
+          .join('\n');
     }
     final s = value.toString().trim();
     return s.isEmpty ? '—' : s;
@@ -147,7 +189,19 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     final fileName = r['file_name'] as String?;
     final reportDate = r['report_date'] as String?;
     final createdAt = r['created_at'] as String?;
-    final extractedData = r['extracted_data'] as Map<String, dynamic>?;
+    
+    Map<String, dynamic>? extractedData;
+    final rawExtracted = r['extracted_data'];
+    if (rawExtracted is String) {
+      try {
+        extractedData = jsonDecode(rawExtracted) as Map<String, dynamic>?;
+      } catch (_) {}
+    } else if (rawExtracted is Map<String, dynamic>) {
+      extractedData = rawExtracted;
+    } else if (rawExtracted is Map) {
+      extractedData = Map<String, dynamic>.from(rawExtracted);
+    }
+
     final displayType = type.replaceAll('_', ' ');
 
     String createdStr = '';
@@ -217,18 +271,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  ...extractedData.entries.map(
-                    (entry) => Column(
-                      children: [
-                        _metaRow(
-                          Icons.analytics_outlined,
-                          _labelizeKey(entry.key),
-                          _formatExtractedValue(entry.value),
-                        ),
-                        if (entry.key != extractedData.keys.last) _divider(),
-                      ],
-                    ),
-                  ),
+                  _buildOrganizedData(extractedData),
                 ],
               ),
             ),
@@ -396,4 +439,139 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
 
   Widget _divider() =>
       Divider(height: 1, color: AppColors.outline.withValues(alpha: 0.2));
+
+  Widget _buildOrganizedData(Map<String, dynamic> extractedData) {
+    final metaKeys = ['test_name', 'lab_name', 'patient_name', 'report_date', 'doctor_name'];
+    final List<Widget> metaWidgets = [];
+    
+    for (final key in metaKeys) {
+      final val = extractedData.containsKey(key) ? extractedData[key] : null;
+      metaWidgets.add(
+        Container(
+          width: (MediaQuery.of(context).size.width - 70) / 2, // 2 cols
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _labelizeKey(key).toUpperCase(),
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                val != null && val.toString().trim().isNotEmpty ? val.toString() : '—',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Widget? tableWidget;
+    if (extractedData.containsKey('results') && extractedData['results'] is List) {
+      final results = extractedData['results'] as List;
+      if (results.isNotEmpty) {
+        tableWidget = Container(
+          margin: const EdgeInsets.only(top: 16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              headingRowColor: WidgetStateProperty.all(
+                Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+              ),
+              dataRowMinHeight: 48,
+              dataRowMaxHeight: 48,
+              headingTextStyle: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+              dataTextStyle: GoogleFonts.inter(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              columnSpacing: 24,
+              columns: const [
+                DataColumn(label: Text('Parameter')),
+                DataColumn(label: Text('Value')),
+                DataColumn(label: Text('Unit')),
+                DataColumn(label: Text('Reference')),
+                DataColumn(label: Text('Flag')),
+              ],
+              rows: results.map((row) {
+                final r = row is Map ? row : {};
+                final flagStr = (r['flag']?.toString() ?? '').toLowerCase();
+                final isAbnormal = flagStr == 'high' || flagStr == 'low';
+                
+                return DataRow(
+                  cells: [
+                    DataCell(Text(r['parameter']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w500))),
+                    DataCell(Text(r['value']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w600))),
+                    DataCell(Text(r['unit']?.toString() ?? '', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)))),
+                    DataCell(Text(r['reference_range']?.toString() ?? '', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)))),
+                    DataCell(
+                      isAbnormal
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                r['flag'].toString().toUpperCase(),
+                                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.red),
+                              ),
+                            )
+                          : Text(r['flag']?.toString() ?? ''),
+                    ),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (metaWidgets.isNotEmpty)
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: metaWidgets,
+          ),
+        if (tableWidget != null) tableWidget,
+        if (metaWidgets.isEmpty && tableWidget == null)
+          ...extractedData.entries.map((e) => Column(
+            children: [
+              _metaRow(Icons.data_object, _labelizeKey(e.key), _formatExtractedValue(e.value)),
+              if (e.key != extractedData.keys.last) _divider(),
+            ],
+          ))
+      ],
+    );
+  }
 }

@@ -1,11 +1,14 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { authApi } from '@/lib/api-client';
 import clsx from 'clsx';
+import { useTheme } from 'next-themes';
+import { Sun, Moon } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -25,9 +28,14 @@ const patientNav: NavItem[] = [
     icon: <CalendarIcon />,
   },
   {
-    label: 'My Reports',
+    label: 'Reports',
     href: '/patient/reports',
     icon: <FolderIcon />,
+  },
+  {
+    label: 'Incidents',
+    href: '/patient/incidents',
+    icon: <IncidentIcon />,
   },
   {
     label: 'AI Assistant',
@@ -43,7 +51,7 @@ const doctorNav: NavItem[] = [
     icon: <HomeIcon />,
   },
   {
-    label: 'Appointments',
+    label: 'Schedule',
     href: '/doctor/appointments',
     icon: <CalendarIcon />,
   },
@@ -53,22 +61,43 @@ const doctorNav: NavItem[] = [
     icon: <UsersIcon />,
   },
   {
-    label: 'Reports',
-    href: '/doctor/reports',
-    icon: <FolderIcon />,
-  },
-  {
-    label: 'AI Assistant',
-    href: '/doctor/chat',
-    icon: <ChatIcon />,
+    label: 'Review',
+    href: '/doctor/review',
+    icon: <ReviewIcon />,
   },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
   const { role, user, logout, refreshToken } = useAuthStore();
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const navItems = role === 'doctor' ? doctorNav : patientNav;
+  const profileHref = role === 'doctor' ? '/doctor/profile' : '/patient/profile';
+
+  function isActive(href: string) {
+    if (pathname === href) return true;
+    // Highlight parent for nested routes like /patient/appointments/book
+    if (href !== `/${role}/dashboard` && pathname.startsWith(href + '/')) return true;
+    return false;
+  }
+
+  const initials = user?.full_name
+    ? user.full_name
+        .split(' ')
+        .map((w) => w[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : role === 'doctor'
+    ? 'Dr'
+    : 'U';
 
   async function handleLogout() {
     try {
@@ -81,12 +110,19 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="flex flex-col w-64 h-screen bg-white border-r border-gray-200 px-4 py-6">
-      <div className="flex items-center gap-3 mb-8 px-2">
-        <div className="w-8 h-8 rounded-lg overflow-hidden">
-          <Image src="/logo-192.png" alt="Health Care logo" width={32} height={32} />
+    <aside className="flex flex-col w-72 h-screen bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-r border-gray-200/60 dark:border-slate-800/60 px-5 py-8 flex-shrink-0 relative shadow-[4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-none">
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-primary-500/5 to-transparent pointer-events-none" />
+
+      <div className="flex flex-col mb-10 px-2 relative z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl shadow-sm overflow-hidden flex-shrink-0 border border-gray-100/50 dark:border-slate-700/50">
+            <Image src="/logo-192.png" alt="Health Care logo" width={36} height={36} className="w-full h-full object-cover" />
+          </div>
+          <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-100">Health Care</span>
         </div>
-        <span className="font-semibold text-gray-900">Health Care</span>
+        <div className="mt-3 inline-flex self-start px-3 py-1 bg-primary-600 text-white text-[10px] font-bold uppercase tracking-widest rounded-full shadow-sm shadow-primary-500/20">
+          {role} Portal
+        </div>
       </div>
 
       <nav className="flex-1 space-y-1">
@@ -95,26 +131,52 @@ export default function Sidebar() {
             key={item.href}
             href={item.href}
             className={clsx(
-              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-              pathname === item.href
-                ? 'bg-primary-50 text-primary-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              'flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200',
+              isActive(item.href)
+                ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20 dark:shadow-none'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/80 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-slate-800/80'
             )}
           >
-            <span className="w-5 h-5 flex-shrink-0">{item.icon}</span>
+            <span className={clsx("w-5 h-5 flex-shrink-0", isActive(item.href) ? "text-white" : "")}>{item.icon}</span>
             {item.label}
           </Link>
         ))}
       </nav>
 
-      <div className="border-t border-gray-200 pt-4 mt-4">
-        <div className="px-3 mb-3">
-          <p className="text-sm font-medium text-gray-900 truncate">{user?.full_name ?? 'User'}</p>
-          <p className="text-xs text-gray-500 capitalize">{role}</p>
-        </div>
+      <div className="mt-auto pt-6 space-y-2 relative z-10">
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="flex items-center gap-3.5 w-full px-4 py-3 rounded-xl text-sm font-semibold text-gray-500 hover:text-gray-900 hover:bg-gray-100/80 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-slate-800/80 transition-all duration-200"
+        >
+          <div className="w-5 h-5 flex items-center justify-center">
+            {mounted && theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </div>
+          {mounted && theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+        </button>
+
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-200 dark:via-slate-800 to-transparent my-4" />
+
+        <Link
+          href={profileHref}
+          className={clsx(
+            'flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-200',
+            pathname === profileHref
+              ? 'bg-primary-50 dark:bg-slate-800/80 text-primary-700 dark:text-primary-400'
+              : 'hover:bg-gray-100/80 dark:hover:bg-slate-800/80'
+          )}
+        >
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm border-2 border-white dark:border-slate-800">
+            {initials}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{user?.full_name ?? 'User'}</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">{role}</p>
+          </div>
+        </Link>
+
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+          className="flex items-center gap-3.5 w-full px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200"
         >
           <LogoutIcon />
           Sign Out
@@ -148,10 +210,26 @@ function FolderIcon() {
   );
 }
 
+function IncidentIcon() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+    </svg>
+  );
+}
+
 function ChatIcon() {
   return (
     <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+    </svg>
+  );
+}
+
+function ReviewIcon() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75" />
     </svg>
   );
 }
