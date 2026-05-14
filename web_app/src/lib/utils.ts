@@ -69,6 +69,6 @@ export function statusColor(status: string): string {
     case 'extracted':
       return 'text-violet-700 bg-violet-50';
     default:
-      return 'text-gray-700 bg-gray-100';
+      return 'text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800';
   }
 }

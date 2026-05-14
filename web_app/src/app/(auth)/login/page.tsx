@@ -33,20 +33,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4 shadow-sm">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white dark:bg-slate-900 rounded-full mb-4 shadow-sm">
             <Image src="/logo-192.png" alt="Health Care logo" width={48} height={48} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Health Care</h1>
-          <p className="text-gray-500 mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Health Care</h1>
+          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Sign in to your account</p>
         </div>
 
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
               <input
                 type="email"
                 className="input"
@@ -57,7 +57,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
               <input
                 type="password"
                 className="input"
@@ -75,7 +75,7 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-          <p className="text-center text-sm text-gray-500 mt-4">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-4">
             Don&apos;t have an account?{' '}
             <Link href="/register" className="text-primary-600 hover:underline font-medium">
               Register

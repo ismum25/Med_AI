@@ -138,7 +138,7 @@ export default function DoctorReviewDetail() {
   if (!report) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-500">Report not found</p>
+        <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Report not found</p>
         <button onClick={() => router.back()} className="text-primary-600 hover:underline text-sm mt-2">Go back</button>
       </div>
     );
@@ -146,16 +146,16 @@ export default function DoctorReviewDetail() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-20">
-      <button onClick={() => router.back()} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
+      <button onClick={() => router.back()} className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:text-gray-300 flex items-center gap-1">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
         Back
       </button>
 
       {/* Header */}
-      <div className="rounded-xl bg-white border border-gray-100 shadow-sm p-5">
-        <h1 className="text-xl font-bold text-gray-900">{report.title || report.file_name || 'Report'}</h1>
-        {report.report_type && <p className="text-sm text-gray-500 mt-1">{humanizeSnake(report.report_type)}</p>}
-        <p className="text-xs text-gray-400 mt-1">{formatDateTime(report.created_at)}</p>
+      <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm p-5">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{report.title || report.file_name || 'Report'}</h1>
+        {report.report_type && <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">{humanizeSnake(report.report_type)}</p>}
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDateTime(report.created_at)}</p>
         <div className="mt-3 flex items-center gap-3">
           <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusColor(report.ocr_status)}`}>
             {capitalize(report.ocr_status)}
@@ -168,27 +168,27 @@ export default function DoctorReviewDetail() {
       </div>
 
       {/* Clinical notes */}
-      <div className="rounded-xl bg-white border border-gray-100 shadow-sm p-5">
-        <h2 className="font-semibold text-gray-900 mb-2">Clinical Notes</h2>
+      <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm p-5">
+        <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Clinical Notes</h2>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Optional notes for this report..."
           rows={3}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
       </div>
 
       {/* Extracted data */}
-      <div className="rounded-xl bg-white border border-gray-100 shadow-sm p-5 space-y-4">
-        <h2 className="font-semibold text-gray-900">Extracted Data</h2>
+      <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm p-5 space-y-4">
+        <h2 className="font-semibold text-gray-900 dark:text-gray-100">Extracted Data</h2>
 
         {useRawJson ? (
           <textarea
             value={rawJson}
             onChange={(e) => setRawJson(e.target.value)}
             rows={16}
-            className="w-full font-mono text-xs border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full font-mono text-xs border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         ) : (
           <>
@@ -196,11 +196,11 @@ export default function DoctorReviewDetail() {
             <div className="grid grid-cols-2 gap-3">
               {META_KEYS.map((k) => (
                 <div key={k}>
-                  <label className="text-xs font-medium text-gray-500 mb-0.5 block">{humanizeSnake(k)}</label>
+                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-0.5 block">{humanizeSnake(k)}</label>
                   <input
                     value={meta[k] || ''}
                     onChange={(e) => setMeta((prev) => ({ ...prev, [k]: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               ))}
@@ -208,15 +208,15 @@ export default function DoctorReviewDetail() {
 
             {/* Results */}
             <div className="flex items-center justify-between">
-              <h3 className="font-medium text-gray-900 text-sm">Results</h3>
+              <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm">Results</h3>
               <button onClick={() => setResults((r) => [...r, emptyRow()])} className="text-xs text-primary-600 hover:underline font-medium">+ Add Row</button>
             </div>
 
             <div className="space-y-3">
               {results.map((row, i) => (
-                <div key={i} className="rounded-lg bg-gray-50 p-3 space-y-2">
+                <div key={i} className="rounded-lg bg-gray-50 dark:bg-slate-950 p-3 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-gray-500">Row {i + 1}</span>
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500">Row {i + 1}</span>
                     {results.length > 1 && (
                       <button onClick={() => setResults((r) => r.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
@@ -226,14 +226,14 @@ export default function DoctorReviewDetail() {
                   <div className="grid grid-cols-5 gap-2">
                     {(['parameter', 'value', 'unit', 'reference_range', 'flag'] as const).map((field) => (
                       <div key={field}>
-                        <label className="text-[10px] text-gray-400">{humanizeSnake(field)}</label>
+                        <label className="text-[10px] text-gray-400 dark:text-gray-500">{humanizeSnake(field)}</label>
                         <input
                           value={row[field]}
                           onChange={(e) => {
                             const val = e.target.value;
                             setResults((prev) => prev.map((r, j) => j === i ? { ...r, [field]: val } : r));
                           }}
-                          className="w-full border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full border border-gray-200 dark:border-slate-800 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
                       </div>
                     ))}

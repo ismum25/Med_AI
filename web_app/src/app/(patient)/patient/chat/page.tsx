@@ -134,22 +134,22 @@ export default function PatientChat() {
   return (
     <div className="flex h-[calc(100vh-4rem)] max-w-5xl mx-auto gap-4">
       {/* Sidebar */}
-      <div className="w-64 flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
-        <div className="p-3 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-semibold text-sm text-gray-900">Conversations</h2>
-          <button onClick={startNewChat} className="text-primary-600 hover:bg-primary-50 p-1.5 rounded-lg transition-colors" title="New">
+      <div className="w-64 flex-shrink-0 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
+        <div className="p-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
+          <h2 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Conversations</h2>
+          <button onClick={startNewChat} className="text-primary-600 hover:bg-primary-50 dark:bg-primary-900/30 p-1.5 rounded-lg transition-colors" title="New">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {sessions.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-4">No conversations yet</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">No conversations yet</p>
           ) : sessions.map((s) => (
             <button
               key={s.id}
               onClick={() => loadSession(s.id)}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                s.id === sessionId ? 'bg-primary-50 text-primary-700 font-medium' : 'text-gray-600 hover:bg-gray-50'
+                s.id === sessionId ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 font-medium' : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:bg-slate-950'
               }`}
             >
               <p className="truncate">{s.title || 'New Chat'}</p>
@@ -159,7 +159,7 @@ export default function PatientChat() {
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
           {messages.length === 0 ? (
@@ -167,8 +167,8 @@ export default function PatientChat() {
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
               </div>
-              <h3 className="font-semibold text-gray-900 text-lg">AI Health Assistant</h3>
-              <p className="text-sm text-gray-500 mt-1 max-w-xs">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">AI Health Assistant</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1 max-w-xs">
                 {sessions.length === 0
                   ? 'Start a new conversation about your health, symptoms, or medical reports.'
                   : 'Select a conversation or start a new one.'}
@@ -180,10 +180,10 @@ export default function PatientChat() {
                 <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                   m.role === 'user'
                     ? 'bg-primary-600 text-white rounded-br-md'
-                    : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                    : 'bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-bl-md'
                 }`}>
                   {m.content || (
-                    <span className="flex items-center gap-2 text-gray-400">
+                    <span className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
                       <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-400" />
                       Thinking…
                     </span>
@@ -202,7 +202,7 @@ export default function PatientChat() {
         )}
 
         {/* Input */}
-        <div className="border-t border-gray-100 p-3 flex items-center gap-2">
+        <div className="border-t border-gray-100 dark:border-slate-800 p-3 flex items-center gap-2">
           <input
             ref={inputRef}
             value={input}
@@ -210,7 +210,7 @@ export default function PatientChat() {
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder="Ask about your health…"
             disabled={streaming}
-            className="flex-1 bg-gray-50 border-0 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="flex-1 bg-gray-50 dark:bg-slate-950 border-0 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
           <button
             onClick={send}

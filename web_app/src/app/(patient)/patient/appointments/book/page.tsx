@@ -75,16 +75,16 @@ export default function BookAppointment() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Book an Appointment</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Book an Appointment</h1>
 
       {/* Progress */}
       <div className="flex items-center gap-2 mb-8">
         {['Doctor', 'Date & Time', 'Confirm'].map((label, i) => (
           <div key={label} className="flex items-center gap-2 flex-1">
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-              i <= step ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-500'
+              i <= step ? 'bg-primary-600 text-white' : 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-gray-400 dark:text-gray-500'
             }`}>{i + 1}</div>
-            <span className={`text-sm font-medium ${i <= step ? 'text-gray-900' : 'text-gray-400'}`}>{label}</span>
+            <span className={`text-sm font-medium ${i <= step ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}>{label}</span>
           </div>
         ))}
       </div>
@@ -95,7 +95,7 @@ export default function BookAppointment() {
           <select
             value={selectedSpec}
             onChange={(e) => setSelectedSpec(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">All Specializations</option>
             {specializations.map((s) => (
@@ -108,7 +108,7 @@ export default function BookAppointment() {
                 key={d.user_id}
                 onClick={() => { setSelectedDoctor(d); setStep(1); }}
                 className={`w-full text-left rounded-xl border p-4 transition-all ${
-                  selectedDoctor?.user_id === d.user_id ? 'border-primary-500 bg-primary-50' : 'border-gray-100 bg-white hover:border-primary-200'
+                  selectedDoctor?.user_id === d.user_id ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30' : 'border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary-200'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -116,8 +116,8 @@ export default function BookAppointment() {
                     {d.full_name?.[0]?.toUpperCase() || 'D'}
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">{d.full_name}</p>
-                    <p className="text-sm text-gray-500">{d.specialization}</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{d.full_name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{d.specialization}</p>
                   </div>
                 </div>
               </button>
@@ -130,13 +130,13 @@ export default function BookAppointment() {
       {step === 1 && (
         <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Select Date</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Select Date</label>
             <input
               type="date"
               value={selectedDate}
               min={today}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
 
@@ -146,9 +146,9 @@ export default function BookAppointment() {
 
           {slots && !slotsLoading && (
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">Available Slots</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Available Slots</p>
               {slots.available_slots.length === 0 ? (
-                <p className="text-sm text-gray-500 py-4">No available slots for this date</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 py-4">No available slots for this date</p>
               ) : (
                 <div className="grid grid-cols-3 gap-2">
                   {slots.available_slots.map((slot) => {
@@ -161,10 +161,10 @@ export default function BookAppointment() {
                         onClick={() => setSelectedSlot(iso)}
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                           booked
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed line-through'
+                            ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-gray-500 cursor-not-allowed line-through'
                             : selectedSlot === iso
                             ? 'bg-primary-600 text-white'
-                            : 'bg-white border border-gray-200 text-gray-700 hover:border-primary-400'
+                            : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300 hover:border-primary-400'
                         }`}
                       >
                         {slot}
@@ -177,7 +177,7 @@ export default function BookAppointment() {
           )}
 
           <div className="flex gap-3">
-            <button onClick={() => setStep(0)} className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">
+            <button onClick={() => setStep(0)} className="px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:bg-slate-950">
               Back
             </button>
             <button
@@ -194,35 +194,35 @@ export default function BookAppointment() {
       {/* Step 2: Confirm */}
       {step === 2 && (
         <div className="space-y-6">
-          <div className="rounded-xl bg-white border border-gray-100 p-4 space-y-3">
+          <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-4 space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm">
                 {selectedDoctor?.full_name?.[0]?.toUpperCase() || 'D'}
               </div>
               <div>
-                <p className="font-semibold text-gray-900">{selectedDoctor?.full_name}</p>
-                <p className="text-sm text-gray-500">{selectedDoctor?.specialization}</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedDoctor?.full_name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{selectedDoctor?.specialization}</p>
               </div>
             </div>
-            <div className="text-sm text-gray-700">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
               <p><span className="font-medium">Date:</span> {selectedDate}</p>
               <p><span className="font-medium">Time:</span> {selectedSlot.split('T')[1] || selectedSlot}</p>
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Reason (optional)</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Reason (optional)</label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Describe the reason for your visit..."
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               rows={3}
             />
           </div>
 
           <div className="flex gap-3">
-            <button onClick={() => setStep(1)} className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">
+            <button onClick={() => setStep(1)} className="px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:bg-slate-950">
               Back
             </button>
             <button

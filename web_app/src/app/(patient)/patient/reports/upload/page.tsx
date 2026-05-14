@@ -56,7 +56,7 @@ export default function UploadReportPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Upload Medical Report</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Upload Medical Report</h1>
       <div className="card max-w-lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div
@@ -77,22 +77,22 @@ export default function UploadReportPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{file.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
               </>
             ) : (
               <>
-                <svg className="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-10 h-10 text-gray-400 dark:text-gray-500 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
                 </svg>
-                <p className="text-sm text-gray-600">Click to upload or drag and drop</p>
-                <p className="text-xs text-gray-400 mt-1">Images or PDF up to 20MB</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">Click to upload or drag and drop</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Images or PDF up to 20MB</p>
               </>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
             <input
               className="input"
               value={form.title}
@@ -102,7 +102,7 @@ export default function UploadReportPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Report Type</label>
             <select
               className="input"
               value={form.report_type}
@@ -115,7 +115,7 @@ export default function UploadReportPage() {
           </div>
 
           {loading && (
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
               <div
                 className="bg-primary-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progress || 30}%` }}

@@ -48,32 +48,32 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4 shadow-sm">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white dark:bg-slate-900 rounded-full mb-4 shadow-sm">
             <Image src="/logo-192.png" alt="Health Care logo" width={48} height={48} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
-          <p className="text-gray-500 mt-1">Join Health Care</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Create Account</h1>
+          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Join Health Care</p>
         </div>
 
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
               <input className="input" value={form.full_name} onChange={(e) => update('full_name', e.target.value)} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
               <input type="email" className="input" value={form.email} onChange={(e) => update('email', e.target.value)} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
               <input type="password" className="input" value={form.password} onChange={(e) => update('password', e.target.value)} minLength={8} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
               <select className="input" value={form.role} onChange={(e) => update('role', e.target.value)}>
                 <option value="patient">Patient</option>
                 <option value="doctor">Doctor</option>
@@ -82,11 +82,11 @@ export default function RegisterPage() {
             {form.role === 'doctor' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Specialization</label>
                   <input className="input" value={form.specialization} onChange={(e) => update('specialization', e.target.value)} required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">License Number</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">License Number</label>
                   <input className="input" value={form.license_number} onChange={(e) => update('license_number', e.target.value)} required />
                 </div>
               </>
@@ -95,7 +95,7 @@ export default function RegisterPage() {
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
-          <p className="text-center text-sm text-gray-500 mt-4">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-4">
             Already have an account?{' '}
             <Link href="/login" className="text-primary-600 hover:underline font-medium">Sign in</Link>
           </p>

@@ -1,11 +1,14 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { authApi } from '@/lib/api-client';
 import clsx from 'clsx';
+import { useTheme } from 'next-themes';
+import { Sun, Moon } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -67,7 +70,14 @@ const doctorNav: NavItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
   const { role, user, logout, refreshToken } = useAuthStore();
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const navItems = role === 'doctor' ? doctorNav : patientNav;
   const profileHref = role === 'doctor' ? '/doctor/profile' : '/patient/profile';
 
@@ -100,12 +110,12 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="flex flex-col w-64 h-screen bg-white border-r border-gray-200 px-4 py-6 flex-shrink-0">
+    <aside className="flex flex-col w-64 h-screen bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 px-4 py-6 flex-shrink-0">
       <div className="flex items-center gap-3 mb-8 px-2">
         <div className="w-8 h-8 rounded-lg overflow-hidden">
           <Image src="/logo-192.png" alt="Health Care logo" width={32} height={32} />
         </div>
-        <span className="font-semibold text-gray-900">Health Care</span>
+        <span className="font-semibold text-gray-900 dark:text-gray-100">Health Care</span>
       </div>
 
       <nav className="flex-1 space-y-1">
@@ -116,8 +126,8 @@ export default function Sidebar() {
             className={clsx(
               'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
               isActive(item.href)
-                ? 'bg-primary-50 text-primary-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700'
+                : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-900 dark:text-gray-100'
             )}
           >
             <span className="w-5 h-5 flex-shrink-0">{item.icon}</span>
@@ -126,27 +136,36 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="border-t border-gray-200 pt-4 mt-4 space-y-1">
+      <div className="border-t border-gray-200 dark:border-slate-800 pt-4 mt-4 space-y-1">
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:bg-slate-800 transition-colors"
+        >
+          <div className="w-5 h-5 flex items-center justify-center">
+            {mounted && theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </div>
+          Toggle Theme
+        </button>
         <Link
           href={profileHref}
           className={clsx(
             'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
             pathname === profileHref
-              ? 'bg-primary-50 text-primary-700'
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700'
+              : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-900 dark:text-gray-100'
           )}
         >
           <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
             {initials}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{user?.full_name ?? 'User'}</p>
-            <p className="text-xs text-gray-500 capitalize">{role}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{user?.full_name ?? 'User'}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 capitalize">{role}</p>
           </div>
         </Link>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:bg-slate-800 transition-colors"
         >
           <LogoutIcon />
           Sign Out
