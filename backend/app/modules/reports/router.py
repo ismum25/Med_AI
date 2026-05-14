@@ -119,3 +119,13 @@ async def verify_report(
 ):
     report = await service.verify_report(report_id, current_user.id, data, db)
     return await service.report_to_response(report, db, "doctor")
+
+
+@router.delete("/{report_id}", status_code=204)
+async def delete_report(
+    report_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    await service.delete_report(report_id, current_user.id, current_user.role, db)
+    return None

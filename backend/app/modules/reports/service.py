@@ -216,12 +216,30 @@ async def verify_report(
         extracted = ExtractedReportData(report_id=report_id, data=data.data)
         db.add(extracted)
 
-    report.ocr_status = "verified"
     report.verified_by = doctor_id
     report.verified_at = datetime.now(timezone.utc)
-    if data.notes:
+    report.ocr_status = "verified"
+    if data.notes is not None:
         report.notes = data.notes
 
     await db.commit()
     await db.refresh(report)
     return report
+
+async def delete_report(
+    report_id: uuid.UUID,
+    requester_id: uuid.UUID,
+    requester_role: str,
+    db: AsyncSession,
+) -> None:
+    report = await get_report_by_id(report_id, requester_id, requester_role, db)
+    try:
+        from app.modules.reports import storage
+        # delete_file is a sync function in minio/s3 storage but we just call it
+        storage.delete_file(report.file_url)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Failed to delete report file from storage")
+        
+    await db.delete(report)
+    await db.commit()
