@@ -68,7 +68,7 @@ export default function PatientDashboard() {
         <div className="absolute right-16 -bottom-8 h-20 w-20 rounded-full bg-white dark:bg-slate-900/[0.06]" />
         <h1 className="text-2xl font-bold">{greeting()}</h1>
         <p className="text-white/70 text-sm mt-1">{formatDate(new Date().toISOString(), 'EEEE, MMMM d')}</p>
-        <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white dark:bg-slate-900/[0.18] border border-white/[0.28] px-3.5 py-1.5 text-xs font-medium">
+        <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 dark:bg-slate-900/20 border border-white/30 px-3.5 py-1.5 text-xs font-medium text-white">
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
           Your health overview
         </div>
@@ -136,7 +136,7 @@ export default function PatientDashboard() {
             </div>
             <div className="flex-1">
               <p className="font-medium text-gray-900 dark:text-gray-100">No upcoming appointments</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Book one to get started</p>
             </div>
             <Link href="/patient/appointments/book" className="text-sm font-medium text-primary-600 hover:underline">Book</Link>
           </div>
