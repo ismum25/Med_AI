@@ -30,10 +30,13 @@ function createApiClient(): AxiosInstance {
             refresh_token: refreshToken,
           });
           localStorage.setItem('access_token', data.access_token);
+          document.cookie = `access_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax`;
           original.headers!.Authorization = `Bearer ${data.access_token}`;
           return client(original);
         } catch {
           localStorage.clear();
+          document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
           window.location.href = '/login';
         }
       }

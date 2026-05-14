@@ -27,6 +27,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('refresh_token', refreshToken);
       localStorage.setItem('user_role', role);
       localStorage.setItem('user_id', userId);
+      document.cookie = `access_token=${accessToken}; path=/; max-age=86400; SameSite=Lax`;
+      document.cookie = `user_role=${role}; path=/; max-age=86400; SameSite=Lax`;
     }
     set({ accessToken, refreshToken, role, isAuthenticated: true });
   },
@@ -36,6 +38,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.clear();
+      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     }
     set({ user: null, role: null, accessToken: null, refreshToken: null, isAuthenticated: false });
   },
