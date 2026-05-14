@@ -123,6 +123,7 @@ export const reportsApi = {
     }),
   update: (id: string, data: { title?: string }) =>
     api.patch(`/reports/${id}`, data),
+  delete: (id: string) => api.delete(`/reports/${id}`),
   download: (id: string) => api.get(`/reports/${id}/download`),
   verify: (id: string, data: { data: Record<string, unknown>; notes?: string }) =>
     api.patch(`/reports/${id}/verify`, data),
