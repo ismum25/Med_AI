@@ -57,6 +57,9 @@ async def health_check():
 @app.on_event("startup")
 async def startup_event():
     logger.info(f"Starting {settings.APP_NAME} in {settings.APP_ENV} mode")
+    key = settings.OPENROUTER_API_KEY
+    logger.info(f"OpenRouter key loaded: {'(empty)' if not key else key[:12] + '...'}")
+    logger.info(f"OpenRouter model: {settings.OPENROUTER_MODEL}")
     import asyncio
     from app.database.session import engine as shared_engine
 

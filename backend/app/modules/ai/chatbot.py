@@ -1,10 +1,10 @@
-import json
 import asyncio
-from typing import AsyncGenerator, List
+import json
 import uuid
+from typing import AsyncGenerator, List
+
 import anthropic
 import httpx
-
 from app.config import settings
 from app.modules.ai.tools import TOOLS, execute_tool
 
@@ -51,7 +51,7 @@ def _openrouter_tools() -> list:
     ]
 
 
-async def _openrouter_create(system: str, messages: List[dict]) -> dict:
+async def _openrouter_create(messages: List[dict]) -> dict:
     base_url = settings.OPENROUTER_BASE_URL.rstrip("/")
     url = f"{base_url}/chat/completions"
     headers = {
@@ -65,16 +65,23 @@ async def _openrouter_create(system: str, messages: List[dict]) -> dict:
 
     payload = {
         "model": settings.OPENROUTER_MODEL,
-        "messages": [{"role": "system", "content": system}] + messages,
+        "messages": messages,
         "tools": _openrouter_tools(),
         "tool_choice": "auto",
-        "max_tokens": 1500,
+        "max_tokens": 1024,
     }
 
     timeout = httpx.Timeout(60.0, connect=15.0)
     async with httpx.AsyncClient(timeout=timeout) as http_client:
         response = await http_client.post(url, headers=headers, json=payload)
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        try:
+            detail = exc.response.json()
+        except Exception:
+            detail = exc.response.text
+        raise ValueError(f"OpenRouter {exc.response.status_code}: {detail}") from exc
     return response.json()
 
 
@@ -89,7 +96,7 @@ async def _openrouter_chat_loop(
     tool_calls_made = []
 
     while True:
-        response = await _openrouter_create(system, messages)
+        response = await _openrouter_create(messages)
         choice = (response.get("choices") or [{}])[0]
         message = choice.get("message") or {}
         tool_calls = message.get("tool_calls") or []
@@ -144,14 +151,7 @@ async def stream_chat_response(
         else SYSTEM_PROMPT_PATIENT
     )
 
-    if user_role == "patient":
-        messages = (
-            [{"role": "system", "content": "For patient tools, you can omit patient_id."}]
-            + message_history
-            + [{"role": "user", "content": user_message}]
-        )
-    else:
-        messages = message_history + [{"role": "user", "content": user_message}]
+    messages = message_history + [{"role": "user", "content": user_message}]
     use_openrouter = bool(settings.OPENROUTER_API_KEY)
     if use_openrouter:
         client = None
@@ -164,13 +164,16 @@ async def stream_chat_response(
 
     if use_openrouter:
         or_messages = [{"role": "system", "content": system}] + messages
-        full_response, tool_calls_made = await _openrouter_chat_loop(
-            system=system,
-            messages=or_messages,
-            user_id=user_id,
-            user_role=user_role,
-            db=db,
-        )
+        try:
+            full_response, tool_calls_made = await _openrouter_chat_loop(
+                system=system,
+                messages=or_messages,
+                user_id=user_id,
+                user_role=user_role,
+                db=db,
+            )
+        except Exception as e:
+            full_response = f"I encountered an error: {e}"
         words = full_response.split()
         for i, word in enumerate(words):
             chunk = word + (" " if i < len(words) - 1 else "")
@@ -268,14 +271,7 @@ async def get_chat_response(
         else SYSTEM_PROMPT_PATIENT
     )
 
-    if user_role == "patient":
-        messages = (
-            [{"role": "system", "content": "For patient tools, you can omit patient_id."}]
-            + message_history
-            + [{"role": "user", "content": user_message}]
-        )
-    else:
-        messages = message_history + [{"role": "user", "content": user_message}]
+    messages = message_history + [{"role": "user", "content": user_message}]
     use_openrouter = bool(settings.OPENROUTER_API_KEY)
     if use_openrouter:
         client = None
