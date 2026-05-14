@@ -1,114 +1,202 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { appointmentsApi, usersApi } from '@/lib/api-client';
+import { Appointment, ProfileData } from '@/types';
+import { formatDate, formatTime, statusColor, capitalize } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import { appointmentsApi } from '@/lib/api-client';
-import { Appointment, AppointmentStatus } from '@/types';
-import { format } from 'date-fns';
 
-const STATUS_COLORS: Record<AppointmentStatus, string> = {
-  pending: 'bg-yellow-100 text-yellow-700',
-  confirmed: 'bg-blue-100 text-blue-700',
-  cancelled: 'bg-red-100 text-red-700',
-  completed: 'bg-green-100 text-green-700',
-  no_show: 'bg-gray-100 text-gray-700',
-};
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_BADGES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const TIMEZONES = ['UTC','Asia/Dhaka','Asia/Kolkata','Asia/Singapore','Asia/Tokyo','Asia/Dubai','Europe/London','Europe/Paris','America/New_York','America/Chicago','America/Los_Angeles','Australia/Sydney'];
 
-export default function DoctorAppointmentsPage() {
+interface DayRange { start: string; end: string; }
+
+export default function DoctorSchedule() {
+  const [segment, setSegment] = useState<'hours' | 'appointments'>('hours');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [ranges, setRanges] = useState<Record<string, DayRange[]>>({});
+  const [timezone, setTimezone] = useState<string>('');
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('');
+  const [editDay, setEditDay] = useState<number | null>(null);
+
+  useEffect(() => { load(); }, []);
 
   async function load() {
     setLoading(true);
     try {
-      const { data } = await appointmentsApi.list(filter ? { status: filter } : undefined);
-      setAppointments(data.items ?? data);
-    } catch {
-      toast.error('Failed to load appointments');
-    } finally {
-      setLoading(false);
-    }
+      const [profileRes, apptRes] = await Promise.all([usersApi.myProfile(), appointmentsApi.list()]);
+      const p = profileRes.data as ProfileData;
+      setAppointments(apptRes.data);
+      setTimezone(p.availability_timezone || '');
+      const slots = p.available_slots || {};
+      const parsed: Record<string, DayRange[]> = {};
+      for (const k of DAY_KEYS) {
+        const arr = slots[k] || [];
+        parsed[k] = arr.map((s: string) => {
+          const [start, end] = s.split('-');
+          return { start: start?.trim() || '09:00', end: end?.trim() || '17:00' };
+        });
+      }
+      setRanges(parsed);
+      setDirty(false);
+    } catch { /* ignore */ }
+    setLoading(false);
   }
 
-  useEffect(() => { load(); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function handleStatusUpdate(id: string, status: AppointmentStatus) {
-    try {
-      await appointmentsApi.update(id, { status });
-      toast.success('Status updated');
-      load();
-    } catch {
-      toast.error('Failed to update status');
+  async function save() {
+    if (!timezone && Object.values(ranges).some((r) => r.length > 0)) {
+      toast.error('Select a timezone before saving'); return;
     }
+    setSaving(true);
+    try {
+      const payload: Record<string, string[]> = {};
+      for (const k of DAY_KEYS) {
+        payload[k] = (ranges[k] || []).map((r) => `${r.start}-${r.end}`);
+      }
+      await usersApi.updateDoctorProfile({ available_slots: payload, availability_timezone: timezone });
+      toast.success('Availability saved');
+      setDirty(false);
+    } catch {
+      toast.error('Save failed');
+    }
+    setSaving(false);
+  }
+
+  function addInterval(dayIndex: number) {
+    const key = DAY_KEYS[dayIndex];
+    setRanges((prev) => ({
+      ...prev,
+      [key]: [...(prev[key] || []), { start: '09:00', end: '17:00' }],
+    }));
+    setDirty(true);
+  }
+
+  function removeInterval(dayIndex: number, idx: number) {
+    const key = DAY_KEYS[dayIndex];
+    setRanges((prev) => ({
+      ...prev,
+      [key]: (prev[key] || []).filter((_, i) => i !== idx),
+    }));
+    setDirty(true);
+  }
+
+  function updateInterval(dayIndex: number, idx: number, field: 'start' | 'end', val: string) {
+    const key = DAY_KEYS[dayIndex];
+    setRanges((prev) => ({
+      ...prev,
+      [key]: (prev[key] || []).map((r, i) => i === idx ? { ...r, [field]: val } : r),
+    }));
+    setDirty(true);
+  }
+
+  if (loading) {
+    return <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" /></div>;
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Appointments</h1>
+    <div className="max-w-5xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900">Schedule</h1>
 
-      <div className="mb-4 flex gap-2 flex-wrap">
-        {['', 'pending', 'confirmed', 'completed', 'cancelled'].map((s) => (
+      {/* Segment toggle */}
+      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 max-w-xs">
+        {(['hours', 'appointments'] as const).map((s) => (
           <button
             key={s}
-            onClick={() => setFilter(s)}
-            className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
-              filter === s ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+            onClick={() => setSegment(s)}
+            className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              segment === s ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            {s === '' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+            {s === 'hours' ? 'Weekly Hours' : 'Appointments'}
           </button>
         ))}
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
-        </div>
-      ) : appointments.length === 0 ? (
-        <div className="card text-center py-12">
-          <p className="text-gray-500">No appointments found.</p>
+      {segment === 'hours' ? (
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500">Patients can request appointments within these windows.</p>
+
+          {/* Timezone */}
+          <div className="rounded-xl bg-white border border-gray-100 shadow-sm p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-primary-600">🌍</span>
+              <div>
+                <p className="text-sm font-medium text-gray-900">Timezone</p>
+                <p className="text-xs text-gray-500">{timezone || 'Not set (required)'}</p>
+              </div>
+            </div>
+            <select
+              value={timezone}
+              onChange={(e) => { setTimezone(e.target.value); setDirty(true); }}
+              className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="">Select...</option>
+              {TIMEZONES.map((z) => <option key={z} value={z}>{z}</option>)}
+            </select>
+          </div>
+
+          {/* Day cards */}
+          <div className="space-y-2">
+            {DAY_KEYS.map((key, i) => {
+              const dayRanges = ranges[key] || [];
+              return (
+                <div key={key} className="rounded-xl bg-white border border-gray-100 shadow-sm p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      {DAY_BADGES[i]}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-900">{DAY_NAMES[i]}</h3>
+                        <button onClick={() => addInterval(i)} className="text-xs text-primary-600 hover:underline font-medium">+ Add</button>
+                      </div>
+                      {dayRanges.length === 0 ? (
+                        <p className="text-sm text-gray-400 mt-1">Unavailable</p>
+                      ) : (
+                        <div className="mt-2 space-y-2">
+                          {dayRanges.map((r, ri) => (
+                            <div key={ri} className="flex items-center gap-2">
+                              <input type="time" value={r.start} onChange={(e) => updateInterval(i, ri, 'start', e.target.value)} className="border border-gray-200 rounded px-2 py-1 text-sm" />
+                              <span className="text-gray-400">–</span>
+                              <input type="time" value={r.end} onChange={(e) => updateInterval(i, ri, 'end', e.target.value)} className="border border-gray-200 rounded px-2 py-1 text-sm" />
+                              <button onClick={() => removeInterval(i, ri)} className="text-red-400 hover:text-red-600 ml-1">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {dirty && (
+            <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 disabled:bg-gray-300 transition-colors">
+              {saving ? 'Saving...' : 'Save Availability'}
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
-          {appointments.map((appt) => (
-            <div key={appt.id} className="card">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {appt.patient?.full_name ?? appt.patient_id}
-                  </p>
-                  <p className="text-sm text-gray-500">{format(new Date(appt.scheduled_at), 'PPp')}</p>
-                  {appt.reason && <p className="text-xs text-gray-400 mt-1">{appt.reason}</p>}
-                </div>
-                <span className={`badge ${STATUS_COLORS[appt.status]} capitalize`}>{appt.status}</span>
+          {appointments.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">No appointments</div>
+          ) : appointments.map((a) => (
+            <div key={a.id} className="rounded-xl bg-white border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                {a.patient?.full_name?.[0]?.toUpperCase() || 'P'}
               </div>
-              {(appt.status === 'pending' || appt.status === 'confirmed') && (
-                <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-                  {appt.status === 'pending' && (
-                    <button
-                      onClick={() => handleStatusUpdate(appt.id, 'confirmed')}
-                      className="btn-primary text-sm py-1 px-4 w-auto"
-                    >
-                      Confirm
-                    </button>
-                  )}
-                  {appt.status === 'confirmed' && (
-                    <button
-                      onClick={() => handleStatusUpdate(appt.id, 'completed')}
-                      className="btn-primary text-sm py-1 px-4 w-auto"
-                    >
-                      Mark Complete
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleStatusUpdate(appt.id, 'no_show')}
-                    className="btn-secondary text-sm py-1 px-4 w-auto"
-                  >
-                    No Show
-                  </button>
-                </div>
-              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 truncate">{a.patient?.full_name || 'Patient'}</p>
+                <p className="text-sm text-gray-500">{formatDate(a.scheduled_at, 'MMM d')} at {formatTime(a.scheduled_at)} • {a.reason || 'Consultation'}</p>
+              </div>
+              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusColor(a.status)}`}>{capitalize(a.status)}</span>
             </div>
           ))}
         </div>
