@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { incidentsApi } from '@/lib/api-client';
 import { Incident } from '@/types';
 import { statusColor, capitalize, humanizeSnake, formatDateTime } from '@/lib/utils';
@@ -11,10 +11,15 @@ export default function PatientIncidents() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     loadIncidents();
-  }, []);
+    if (searchParams.get('upload') === 'true') {
+      setShowUploadModal(true);
+    }
+  }, [searchParams]);
 
   function loadIncidents() {
     incidentsApi.list().then((r) => {
@@ -30,22 +35,22 @@ export default function PatientIncidents() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] max-w-7xl mx-auto gap-6 overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] w-full gap-6 overflow-hidden px-4">
       {/* Left List */}
       <div className="w-1/3 flex flex-col min-w-[320px] max-w-sm">
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Incidents</h1>
-          <Link href="/patient/incidents/upload" className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors flex items-center gap-1.5 shadow-sm">
+          <button onClick={() => setShowUploadModal(true)} className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors flex items-center gap-1.5 shadow-sm">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
             Upload
-          </Link>
+          </button>
         </div>
 
         {incidents.length === 0 ? (
           <div className="text-center py-16 flex-1">
             <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
             <p className="text-gray-500 dark:text-gray-400 mb-1">No incidents yet</p>
-            <Link href="/patient/incidents/upload" className="text-primary-600 font-medium text-sm hover:underline">Upload your first incident</Link>
+            <button onClick={() => setShowUploadModal(true)} className="text-primary-600 font-medium text-sm hover:underline">Upload your first incident</button>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto space-y-3 pr-2 pb-4">
@@ -95,6 +100,17 @@ export default function PatientIncidents() {
           </div>
         )}
       </div>
+
+      {showUploadModal && (
+        <IncidentUploadModal 
+          onClose={() => setShowUploadModal(false)}
+          onSuccess={(newId) => {
+            setShowUploadModal(false);
+            setSelectedId(newId);
+            loadIncidents();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -227,6 +243,118 @@ function IncidentDetailView({ id, onDelete }: { id: string, onDelete: () => void
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function IncidentUploadModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: (id: string) => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [title, setTitle] = useState('');
+  const [notes, setNotes] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  function handleFile(f: File | null) {
+    setFile(f);
+    if (f) {
+      const url = URL.createObjectURL(f);
+      setPreview(url);
+    } else {
+      setPreview(null);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (title.trim()) formData.append('title', title.trim());
+      if (notes.trim()) formData.append('notes', notes.trim());
+      const res = await incidentsApi.upload(formData);
+      const id = res.data?.id;
+      toast.success('Incident uploaded and analyzed');
+      if (id) onSuccess(id);
+      else onClose();
+    } catch {
+      toast.error('Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-gray-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Upload Incident</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div
+            onClick={() => fileRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0] || null); }}
+            className={`relative border-2 border-dashed rounded-xl h-40 flex flex-col items-center justify-center cursor-pointer transition-colors ${
+              file ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/30' : 'border-gray-300 dark:border-slate-700 hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'
+            }`}
+          >
+            {preview ? (
+              <img src={preview} alt="preview" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-30" />
+            ) : null}
+            <div className="relative z-10 text-center">
+              {file ? (
+                <>
+                  <svg className="w-8 h-8 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 font-medium truncate px-4">{file.name}</p>
+                </>
+              ) : (
+                <>
+                  <svg className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" /></svg>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Click or drag an injury photo</p>
+                </>
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files?.[0] || null)} />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Title (optional)</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Left arm burn"
+              disabled={uploading}
+              className="w-full bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Notes (optional)</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Additional details..."
+              disabled={uploading}
+              rows={2}
+              className="w-full bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} disabled={uploading} className="flex-1 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+            <button type="submit" disabled={!file || uploading} className="flex-1 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:bg-primary-600/50 flex items-center justify-center transition-colors">
+              {uploading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Analyze'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -47,7 +47,7 @@ export default function PatientDashboard() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500">{error}</p>
+        <p className="text-gray-500 dark:text-gray-400">{error}</p>
         <button onClick={loadData} className="text-primary-600 hover:underline text-sm font-medium">
           Retry
         </button>
@@ -80,11 +80,11 @@ export default function PatientDashboard() {
           <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           <span className="text-xs font-semibold text-primary-600">Book</span>
         </Link>
-        <Link href="/patient/reports/upload" className="flex flex-col items-center gap-2 rounded-2xl border border-teal-100 bg-teal-50/50 py-4 hover:bg-teal-50 transition-colors group">
+        <Link href="/patient/reports?upload=true" className="flex flex-col items-center gap-2 rounded-2xl border border-teal-100 dark:border-teal-900/30 bg-teal-50/50 dark:bg-teal-900/20 py-4 hover:bg-teal-50 dark:hover:bg-teal-900/40 transition-colors group">
           <svg className="w-6 h-6 text-teal-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
           <span className="text-xs font-semibold text-teal-600">Upload</span>
         </Link>
-        <Link href="/patient/incidents/upload" className="flex flex-col items-center gap-2 rounded-2xl border border-orange-100 bg-orange-50/50 py-4 hover:bg-orange-50 transition-colors group">
+        <Link href="/patient/incidents?upload=true" className="flex flex-col items-center gap-2 rounded-2xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/20 py-4 hover:bg-orange-50 dark:hover:bg-orange-900/40 transition-colors group">
           <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
           <span className="text-xs font-semibold text-orange-600">Incident</span>
         </Link>
@@ -94,14 +94,14 @@ export default function PatientDashboard() {
       <div className="grid grid-cols-3 gap-3">
         {[
           { value: upcoming.length, label: 'Upcoming', color: 'text-primary-600 bg-primary-50 dark:bg-primary-900/30', icon: '📅' },
-          { value: reports.length, label: 'Reports', color: 'text-teal-600 bg-teal-50', icon: '📁' },
-          { value: incidents.length, label: 'Incidents', color: 'text-orange-600 bg-orange-50', icon: '🩹' },
+          { value: reports.length, label: 'Reports', color: 'text-teal-600 bg-teal-50 dark:bg-teal-900/30', icon: '📁' },
+          { value: incidents.length, label: 'Incidents', color: 'text-orange-600 bg-orange-50 dark:bg-orange-900/30', icon: '🩹' },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm p-4 flex items-center gap-3">
             <span className={`text-lg w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>{s.icon}</span>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{s.value}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{s.label}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
             </div>
           </div>
         ))}
@@ -122,7 +122,7 @@ export default function PatientDashboard() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{nextAppt.reason || 'Consultation'}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{formatTime(nextAppt.scheduled_at)}, {formatDate(nextAppt.scheduled_at, 'EEEE')}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{formatTime(nextAppt.scheduled_at)}, {formatDate(nextAppt.scheduled_at, 'EEEE')}</p>
               </div>
               <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusColor(nextAppt.status)}`}>
                 {capitalize(nextAppt.status)}
@@ -136,7 +136,7 @@ export default function PatientDashboard() {
             </div>
             <div className="flex-1">
               <p className="font-medium text-gray-900 dark:text-gray-100">No upcoming appointments</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Book one to get started</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
             </div>
             <Link href="/patient/appointments/book" className="text-sm font-medium text-primary-600 hover:underline">Book</Link>
           </div>
@@ -152,8 +152,8 @@ export default function PatientDashboard() {
         {reports.length === 0 ? (
           <div className="rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm p-4 flex items-center gap-4">
             <svg className="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" /></svg>
-            <p className="flex-1 text-gray-500 dark:text-gray-400 dark:text-gray-500">No reports yet</p>
-            <Link href="/patient/reports/upload" className="text-sm font-medium text-primary-600 hover:underline">Upload</Link>
+            <p className="flex-1 text-gray-500 dark:text-gray-400">No reports yet</p>
+            <Link href="/patient/reports?upload=true" className="text-sm font-medium text-primary-600 hover:underline">Upload</Link>
           </div>
         ) : (
           <div className="flex gap-3 overflow-x-auto pb-2">

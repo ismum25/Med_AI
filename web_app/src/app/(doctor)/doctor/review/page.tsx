@@ -30,7 +30,7 @@ export default function DoctorReviewQueue() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] max-w-7xl mx-auto gap-6 overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] w-full gap-6 overflow-hidden px-4">
       {/* Left List */}
       <div className="w-1/3 flex flex-col min-w-[320px] max-w-sm">
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
